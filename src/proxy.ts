@@ -10,7 +10,14 @@ export function proxy(req: NextRequest) {
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
 
   if (isAuthRoute && isLoggedIn) {
-    return NextResponse.redirect(new URL("/", req.url));
+    const callbackUrl = nextUrl.searchParams.get("callbackUrl");
+    const safeCallback =
+      callbackUrl &&
+      callbackUrl.startsWith("/") &&
+      !callbackUrl.startsWith("//")
+        ? callbackUrl
+        : "/";
+    return NextResponse.redirect(new URL(safeCallback, req.url));
   }
 
   if (!isLoggedIn && !isAuthRoute) {

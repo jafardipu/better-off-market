@@ -10,7 +10,6 @@ import {
 
 import { SummaryField } from "@/app/(buyer)/review-offer/_components/SummaryField";
 import { ContingencyItem } from "@/app/(buyer)/review-offer/_components/ContingencyItem";
-import { Pill } from "@/app/(buyer)/review-offer/_components/Pill";
 import { DocIcon, DollarIcon, PersonalPropertyIcon } from "@/icons";
 import Link from "next/link";
 import {
@@ -72,40 +71,25 @@ export function ConsolidatedSentOfferCard({
             title="Personal Property"
             icon={<PersonalPropertyIcon />}
           >
-            <div className="flex justify-between items-center flex-wrap gap-4">
+            <div className="space-y-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[#594139]">
                   Included items
                 </p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {data.personalProperty.included.length > 0 ? (
-                    data.personalProperty.included.map((item) => (
-                      <Pill key={item}>{item}</Pill>
-                    ))
-                  ) : (
-                    <span className="text-sm text-muted-foreground">
-                      None specified
-                    </span>
-                  )}
-                </div>
+                <p className="mt-1 whitespace-pre-wrap text-sm text-primary-black md:text-lg">
+                  {data.personalProperty.includedText?.trim() ||
+                    data.personalProperty.included.join(", ") ||
+                    "None specified"}
+                </p>
               </div>
-              {data.personalProperty.itemsToRemove ? (
+              {data.personalProperty.itemsToRemove?.trim() ? (
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-[#594139]">
                     Items to be removed
                   </p>
-
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {data?.personalProperty?.itemsToRemove ? (
-                      data?.personalProperty?.itemsToRemove
-                        ?.split(",")
-                        ?.map((item) => <Pill key={item}>{item}</Pill>)
-                    ) : (
-                      <span className="text-sm text-muted-foreground">
-                        None specified
-                      </span>
-                    )}
-                  </div>
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-primary-black md:text-lg">
+                    {data.personalProperty.itemsToRemove}
+                  </p>
                 </div>
               ) : null}
             </div>
@@ -180,12 +164,21 @@ export function ConsolidatedSentOfferCard({
               />
               <SummaryField
                 label="Seller post-closing occupancy"
-                value={
-                  data?.closingTerms?.sellerPostClosingDays?.toString() ?? "—"
-                }
+                value={data.closingTerms.sellerPostClosingOccupancy}
               />
             </div>
           </OfferSubSection>
+
+          {data.additionalTerms ? (
+            <OfferSubSection
+              title="Additional Terms / Conditions"
+              icon={<MessageSquareText color="#00214C" size={18} />}
+            >
+              <p className="rounded-lg bg-[#F2F4F6] text-[#594139] p-3  italic leading-relaxed">
+                &ldquo;{data?.additionalTerms}&rdquo;
+              </p>
+            </OfferSubSection>
+          ) : null}
         </div>
         <div className="space-y-4">
           {data.documents && data.documents.length > 0 ? (
@@ -206,17 +199,6 @@ export function ConsolidatedSentOfferCard({
                   </li>
                 ))}
               </ul>
-            </OfferSubSection>
-          ) : null}
-
-          {data.additionalTerms ? (
-            <OfferSubSection
-              title="Additional Terms / Conditions"
-              icon={<MessageSquareText color="#00214C" size={18} />}
-            >
-              <p className="rounded-lg bg-[#F2F4F6] text-[#594139] p-3  italic leading-relaxed">
-                &ldquo;{data?.additionalTerms}&rdquo;
-              </p>
             </OfferSubSection>
           ) : null}
 

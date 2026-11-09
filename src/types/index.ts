@@ -113,6 +113,7 @@ export interface IPropertyResponse {
   city: string;
   zipCode: string;
   county: string;
+  countyType?: string;
   parcelIds?: string;
   listingPrice: number;
   buyItNowPrice?: number;

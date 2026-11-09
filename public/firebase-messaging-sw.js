@@ -1,47 +1,55 @@
-// eslint-disable-next-line no-undef
-importScripts("https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js");
-// eslint-disable-next-line no-undef
-importScripts("https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging-compat.js");
+/* eslint-disable no-undef */
+// Must match src/lib/firebase/firebase.ts exactly.
+// A mismatched projectId/senderId breaks getToken and background delivery.
+importScripts(
+  "https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js",
+);
+importScripts(
+  "https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging-compat.js",
+);
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAPkbsjBz-mdjwd6yWaQe1F8CCWZgGP57U",
-  authDomain: "better-off-market-a7f30.firebaseapp.com",
-  projectId: "better-off-market-a7f30",
-  storageBucket: "better-off-market-a7f30.firebasestorage.app",
-  messagingSenderId: "779229615323",
-  appId: "1:779229615323:web:52875b40560e35703728fe",
-  measurementId: "G-MY3GLJMRY2"
+  apiKey: "AIzaSyC4c53R5qCDYZ2Jj7A1Ps7pRJcqKIoEZ-M",
+  authDomain: "better-off-market-project.firebaseapp.com",
+  projectId: "better-off-market-project",
+  storageBucket: "better-off-market-project.firebasestorage.app",
+  messagingSenderId: "541953855584",
+  appId: "1:541953855584:web:b370a0b21448c554ee3305",
+  measurementId: "G-7JTZGTCY17"
 };
 
-// eslint-disable-next-line no-undef
 firebase.initializeApp(firebaseConfig);
-// eslint-disable-next-line no-undef
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const notificationTitle = payload.notification.title;
+  const title =
+    payload?.notification?.title ||
+    payload?.data?.title ||
+    "Better Off Market";
+  const body =
+    payload?.notification?.body ||
+    payload?.data?.body ||
+    payload?.data?.message ||
+    "";
+
+  if (!title && !body) return;
+
   const notificationOptions = {
-    body: payload.notification.body,
+    body,
     icon: "/logo_blue.png",
     badge: "/logo_blue.png",
     data: {
-      url: payload.data?.url || "/notifications", 
+      url: payload?.data?.url || payload?.data?.link || "/notifications",
     },
     vibrate: [100, 50, 100],
-    sound: "default",
-    tag: "notification",
+    tag: payload?.data?.tag || "notification",
     renotify: true,
-    requireInteraction: true,
-    silent: false,
-    actions: [
-      { action: "open", title: "Open" },
-      { action: "close", title: "Close" },
-    ],
+    requireInteraction: false,
   };
-  self.registration.showNotification(notificationTitle, notificationOptions);
+
+  self.registration.showNotification(title, notificationOptions);
 });
 
-// 👇 Add this — handles the click on the notification
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
@@ -51,17 +59,18 @@ self.addEventListener("notificationclick", (event) => {
     clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList) => {
-        // If app tab is already open, focus it and navigate
         for (const client of clientList) {
           if (client.url.includes(self.location.origin) && "focus" in client) {
             client.focus();
-            return client.navigate(targetUrl);
+            if ("navigate" in client) {
+              return client.navigate(targetUrl);
+            }
+            return undefined;
           }
         }
-        // Otherwise open a new tab
         if (clients.openWindow) {
           return clients.openWindow(targetUrl);
         }
-      })
+      }),
   );
 });

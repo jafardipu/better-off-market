@@ -9,7 +9,7 @@ import Link from "next/link";
 import logo from "@/assets/images/logo_blue.png";
 import Image from "next/image";
 import { useAppDispatch } from "@/redux/hooks";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { setUser } from "@/redux/features/authSlice";
 import { jwtDecode } from "jwt-decode";
 import { useLoginMutation } from "@/redux/api/authApi";
@@ -32,7 +32,6 @@ export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useAppDispatch();
-  const router = useRouter();
   const [login, { isLoading }] = useLoginMutation();
   const { requestFcmToken } = useFcmToken();
 
@@ -54,7 +53,13 @@ export default function LoginForm() {
 
   const onSubmit = async (data: LoginFormData & { fcmToken?: string }) => {
     try {
-      const fcmToken = await requestFcmToken();
+      // Try FCM, but never block login for long. FirebaseProvider also syncs
+      // the token after auth is restored on the next page load.
+      const fcmToken = await Promise.race([
+        requestFcmToken(),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000)),
+      ]);
+
       if (fcmToken) data.fcmToken = fcmToken;
 
       const res = await login(data).unwrap();
@@ -66,9 +71,19 @@ export default function LoginForm() {
         }),
       );
       toast.success("Login successful!");
-      if (callbackUrl) router.replace(callbackUrl);
-      else router.push("/");
       setError(null);
+
+      // Hard navigation so proxy/middleware re-reads the cookie. Client
+      // router.push can reuse a cached redirect from the earlier
+      // unauthenticated visit to /submit-offer and leave the user stuck.
+
+      const destination =
+        callbackUrl &&
+          callbackUrl.startsWith("/") &&
+          !callbackUrl.startsWith("//")
+          ? callbackUrl
+          : "/";
+      window.location.assign(destination);
     } catch (err: any) {
       const error = errorModification(err);
       toast.error(error);

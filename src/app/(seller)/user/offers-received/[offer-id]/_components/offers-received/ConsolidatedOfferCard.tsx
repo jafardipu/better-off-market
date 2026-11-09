@@ -172,12 +172,21 @@ export function ConsolidatedOfferCard({
             />
             <SummaryField
               label="Seller post-closing occupancy"
-              value={
-                data?.closingTerms?.sellerPostClosingDays?.toString() ?? "—"
-              }
+              value={data.closingTerms.sellerPostClosingOccupancy}
             />
           </div>
         </OfferSubSection>
+
+        {data.additionalTerms ? (
+          <OfferSubSection
+            title="Additional Terms / Conditions"
+            icon={<MessageSquareText color="#00214C" size={18} />}
+          >
+            <p className="rounded-lg bg-[#F2F4F6] text-[#594139] p-3  italic leading-relaxed">
+              &ldquo;{data?.additionalTerms}&rdquo;
+            </p>
+          </OfferSubSection>
+        ) : null}
 
         {data.documents && data.documents.length > 0 ? (
           <OfferSubSection title="Documents" icon={<DocIcon />}>
@@ -197,17 +206,6 @@ export function ConsolidatedOfferCard({
                 </li>
               ))}
             </ul>
-          </OfferSubSection>
-        ) : null}
-
-        {data.additionalTerms ? (
-          <OfferSubSection
-            title="Additional Terms / Conditions"
-            icon={<MessageSquareText color="#00214C" size={18} />}
-          >
-            <p className="rounded-lg bg-[#F2F4F6] text-[#594139] p-3  italic leading-relaxed">
-              &ldquo;{data?.additionalTerms}&rdquo;
-            </p>
           </OfferSubSection>
         ) : null}
 

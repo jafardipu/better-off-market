@@ -26,7 +26,7 @@ export default function FavoriteIcon({
   const router = useRouter();
   const pathName = usePathname();
   const { data: savePropertiesData, isLoading: isLoadingProperties } =
-    useGetFavoritesQuery(undefined);
+    useGetFavoritesQuery(undefined, { skip: !user });
 
   const saveProperties: ISavePropertiesResponse[] =
     savePropertiesData?.data?.data || [];

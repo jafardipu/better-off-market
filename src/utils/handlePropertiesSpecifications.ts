@@ -1,6 +1,13 @@
 import { Boxes, Building, Calendar, Cuboid, LandPlot } from "lucide-react";
 import { AreaIcon, BedIcon, ShawarIcon } from "@/icons";
 
+/** Sum full + half baths for the compact property stats row. */
+function totalBaths(specifications: any) {
+  const full = Number(specifications?.fullBaths) || 0;
+  const half = Number(specifications?.halfBaths) || 0;
+  const total = full + half;
+  return total > 0 ? total : undefined;
+}
 
 export const handlePropertiesSpecifications = (
   propertyType: string,
@@ -17,7 +24,7 @@ export const handlePropertiesSpecifications = (
         },
         {
           icon: ShawarIcon,
-          value: specifications?.fullBaths,
+          value: totalBaths(specifications),
           suffix: "Baths",
           label: "Bathrooms",
         },

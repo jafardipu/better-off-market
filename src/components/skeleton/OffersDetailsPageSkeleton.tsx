@@ -82,6 +82,11 @@ export default function OffersDetailsPageSkeleton() {
           </div>
         </SubSectionSkeleton>
 
+        {/* Additional Terms */}
+        <SubSectionSkeleton>
+          <div className="h-12 w-full rounded-lg bg-gray-100" />
+        </SubSectionSkeleton>
+
         {/* Documents */}
         <SubSectionSkeleton>
           <div className="flex flex-col gap-2">
@@ -92,11 +97,6 @@ export default function OffersDetailsPageSkeleton() {
               />
             ))}
           </div>
-        </SubSectionSkeleton>
-
-        {/* Additional Terms */}
-        <SubSectionSkeleton>
-          <div className="h-12 w-full rounded-lg bg-gray-100" />
         </SubSectionSkeleton>
 
         {/* Notes to Seller */}

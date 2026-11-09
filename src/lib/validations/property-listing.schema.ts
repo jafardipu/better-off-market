@@ -47,7 +47,9 @@ export const propertyListingSchema = z
     county: z
       .string({ message: "County is required" })
       .min(1, "County is required"),
-    countyType: z.string().min(1, "County type is required"),
+    countyType: z
+      .string({ error: "County is required" })
+      .min(1, "County is required"),
     city: z.string().min(1, "City is required"),
     zipCode: z.string().min(5, "Enter a valid ZIP code"),
     // county: z.string().min(1, "County is required"),

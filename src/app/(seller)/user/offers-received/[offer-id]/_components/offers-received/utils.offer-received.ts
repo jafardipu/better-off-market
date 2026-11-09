@@ -12,6 +12,8 @@ export interface ConsolidatedOfferData {
   commission?: string;
   personalProperty: {
     included: string[];
+    /** Original textarea text, before it is split into pills. */
+    includedText?: string;
     itemsToRemove?: string;
   };
   inspection: { required: boolean; days?: number };
@@ -21,6 +23,8 @@ export interface ConsolidatedOfferData {
     closingDate: string;
     possession: string;
     sellerPostClosingDays?: number;
+    /** Display value: "N/A" for at closing, "X Days" for post closing. */
+    sellerPostClosingOccupancy: string;
   };
   agent?: {
     hasAgent: boolean;
@@ -105,6 +109,19 @@ export function formatPossession(possession: string) {
     .join(" ");
 }
 
+/** At closing → "N/A"; post closing → "X Days". */
+export function formatSellerPostClosingOccupancy(
+  possession?: string,
+  days?: number,
+) {
+  if (possession === "at_closing") return "N/A";
+  if (possession === "post_closing") {
+    const count = days ?? 0;
+    return `${count} ${count === 1 ? "Day" : "Days"}`;
+  }
+  return "N/A";
+}
+
 export function formatClosingCosts(
   option: string,
   sellerContribution?: number,
@@ -168,6 +185,7 @@ export function mapTermsToConsolidatedOfferData(
     // commission: formatCommission(terms.commission, terms.paidBy),
     personalProperty: {
       included: splitToList(terms.personalPropertyIncluded),
+      includedText: terms.personalPropertyIncluded,
       itemsToRemove: terms.itemsToBeRemoved,
     },
     inspection: {
@@ -183,6 +201,10 @@ export function mapTermsToConsolidatedOfferData(
       closingDate: formatDate(terms.closingDate),
       possession: formatPossession(terms.possession),
       sellerPostClosingDays: terms?.sellerPostClosingDays,
+      sellerPostClosingOccupancy: formatSellerPostClosingOccupancy(
+        terms.possession,
+        terms.sellerPostClosingDays,
+      ),
     },
     agent: {
       hasAgent: terms.hasAgent === "yes",

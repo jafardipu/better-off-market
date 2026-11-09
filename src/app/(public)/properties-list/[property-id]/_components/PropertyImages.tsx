@@ -86,7 +86,7 @@ export default function PropertyImages({
 
             {/* Mobile/tablet: show all photos overlay */}
             <div
-              onClick={() => setPreviewImgIndex(5)}
+              onClick={() => setPreviewImgIndex(0)}
               className="lg:hidden bg-white/90 flex items-center gap-1 absolute bottom-2 right-2 px-2 py-1.5 text-xs sm:text-sm font-medium rounded-md z-50 cursor-pointer"
             >
               <LayoutGrid size={14} className="sm:w-4 sm:h-4" /> Show all photos
@@ -132,9 +132,9 @@ export default function PropertyImages({
                 className="absolute inset-0 w-full h-full object-cover lg:rounded-br-xl"
               />
             </Preview>
-            {propertyImages[5] && (
+            {propertyImages.length > 5 && (
               <div
-                onClick={() => setPreviewImgIndex(5)}
+                onClick={() => setPreviewImgIndex(0)}
                 className="bg-white/90 flex items-center gap-1 absolute bottom-4 right-4 px-2 py-1.5 text-sm font-medium rounded-md z-999 cursor-pointer"
               >
                 <LayoutGrid size={16} /> Show all photos

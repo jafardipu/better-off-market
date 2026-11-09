@@ -14,7 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-const closedStatus = ["Under Contract", "Sold", "Rejected"];
+const hiddenStatus = ["Sold", "Rejected"];
 
 export default function ListingPropertyDetails({
   property,
@@ -24,17 +24,23 @@ export default function ListingPropertyDetails({
   const [updateStatus, { isLoading }] = useUpdatePropertyMutation();
   const router = useRouter();
 
-  const handleMarkUnderContract = async () => {
+  const isUnderContract = property?.status === "Under Contract";
+  const nextStatus = isUnderContract ? "Active" : "Under Contract";
+  const buttonLabel = isUnderContract
+    ? "Mark as Active"
+    : "Mark Under Contract";
+
+  const handleToggleContractStatus = async () => {
     try {
       await updateStatus({
         id: property?._id,
         formData: {
-          status: "Under Contract",
+          status: nextStatus,
         },
-      });
-      toast.success("Property status updated to Under Contract.");
+      }).unwrap();
+      toast.success(`Property status updated to ${nextStatus}.`);
       await revalidateProperties();
-      router.back();
+      router.refresh();
     } catch (error) {
       const errorMessage = errorModification(error);
       toast.error(
@@ -68,13 +74,14 @@ export default function ListingPropertyDetails({
             Edit Properties
           </Button>
         </Link>
-        {!closedStatus.includes(property?.status) && (
+        {!hiddenStatus.includes(property?.status) && (
           <Button
-            onClick={handleMarkUnderContract}
+            onClick={handleToggleContractStatus}
             disabled={isLoading}
             className="bg-[#0076AC] hover:bg-[#0076AC]/90 text-white font-semibold py-5.5 px-7 rounded-lg transition-colors cursor-pointer group"
           >
-            Mark Under Contract{isLoading ? "..." : <AnimatedArrow size={20} />}
+            {buttonLabel}
+            {isLoading ? "..." : <AnimatedArrow size={20} />}
           </Button>
         )}
       </div>
