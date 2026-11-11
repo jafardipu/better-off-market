@@ -36,7 +36,7 @@ export default function Header() {
           variants={fadeUp as any}
           className="lg:text-[64px] md:text-4xl text-3xl font-bold"
         >
-          About <span className="text-[#1F4E8B]"> PropMarket </span>
+          About <span className="text-[#1F4E8B]"> BetterOffMarket </span>
         </motion.h3>
 
         <motion.p
@@ -46,9 +46,9 @@ export default function Header() {
           variants={fadeUp as any}
           className="text-lg text-primary-gray max-w-lg leading-relaxed"
         >
-          We connect real estate sellers and investors directly — no agents, no
-          commissions on our platform. Experience the future of transparent
-          property trading.
+          We believe better real estate opportunities start with better connections. BetterOffMarket
+          provides a centralized platform where you can connect, communicate, and negotiate directly-
+          making off-market real estate more accessible and efficient.
         </motion.p>
       </div>
 
