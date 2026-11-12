@@ -23,8 +23,6 @@ export default function PropertyContainer({
     moment(openHouseDate).isValid() &&
     !moment(openHouseDate).isBefore(moment(), "day");
 
-    console.log(openHouseDate)
-
   return (
     <Container className="mt-12">
       <IncreaseViewsCount id={property?._id} seller={property?.seller} />

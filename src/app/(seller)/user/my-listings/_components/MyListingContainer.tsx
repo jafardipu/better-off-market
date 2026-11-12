@@ -72,7 +72,7 @@ export default function MyListingContainer() {
       <Tabs
         defaultValue="all"
         className="w-full mt-5"
-        onValueChange={(value) => {setActiveTab(value as ListingTab); console.log(value)}}
+        onValueChange={(value) => { setActiveTab(value as ListingTab) }}
       >
         <TabsList>
           <TabsTrigger

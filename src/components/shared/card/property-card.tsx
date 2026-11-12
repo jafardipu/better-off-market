@@ -37,8 +37,6 @@ export function PropertyCard({
     specifications,
   ).filter((spec) => Boolean(spec.value));
 
-  console.log(approvedDate);
-
   return (
     <Link
       href={`/properties-list/${_id}`}
