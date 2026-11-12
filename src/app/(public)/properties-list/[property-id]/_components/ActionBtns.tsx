@@ -16,12 +16,14 @@ export function ActionBtns({
   createdAt,
   seller,
   status,
+  approvedDate,
 }: {
   id: string;
   totalViews: number;
   createdAt: string;
   seller: IUser;
   status: TPropertyStatus;
+  approvedDate?: string;
 }) {
   const pathName = usePathname();
   const user: any = useAppSelector((state) => state.auth.user);
@@ -72,7 +74,7 @@ export function ActionBtns({
           <Eye size={22} /> {totalViews} Views,
         </span>
         <span className="text-[#594139] flex items-center gap-1 ">
-          Listed {moment(createdAt).fromNow()}
+          Listed {moment( approvedDate || createdAt).fromNow()}
         </span>
       </div>
     </div>

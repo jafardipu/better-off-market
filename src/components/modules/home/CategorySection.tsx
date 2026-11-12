@@ -6,7 +6,7 @@ import { categories } from "@/data/categories";
 export default function CategorySection() {
   const sectionTitleData = {
     title: "Browse by category",
-    description: "Find specifically what your portfolio needs.",
+    description: "Find the property that fits your needs",
     className: "text-center",
   };
 

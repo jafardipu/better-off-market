@@ -46,13 +46,7 @@ function RealEstateAgentSectionImpl() {
               onBlur={field.onBlur}
               className="flex items-center gap-6 cursor-pointer"
             >
-              <Label
-                htmlFor="hasAgent-yes"
-                className="flex cursor-pointer items-center gap-2 text-primary-black"
-              >
-                <RadioGroupItem value="yes" id="hasAgent-yes" />
-                Yes
-              </Label>
+
               <Label
                 htmlFor="hasAgent-no"
                 className="flex cursor-pointer items-center gap-2 text-primary-black"
@@ -60,6 +54,14 @@ function RealEstateAgentSectionImpl() {
                 <RadioGroupItem value="no" id="hasAgent-no" />
                 No
               </Label>
+              <Label
+                htmlFor="hasAgent-yes"
+                className="flex cursor-pointer items-center gap-2 text-primary-black"
+              >
+                <RadioGroupItem value="yes" id="hasAgent-yes" />
+                Yes
+              </Label>
+
             </RadioGroup>
           )}
         />

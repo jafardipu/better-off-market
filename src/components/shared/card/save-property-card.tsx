@@ -24,6 +24,7 @@ export function SavePropertyCard({
   status,
   propertiesSpecificationsClassName,
   saveDate,
+  approvedDate,
 }: IPropertyResponse & {
   className?: string;
   propertiesSpecificationsClassName?: string;
@@ -57,7 +58,7 @@ export function SavePropertyCard({
 
         <div className="absolute top-3 left-3 flex gap-1">
           <div className="bg-[#1F4E8B] text-white px-2.5 py-1 rounded-full text-xs font-semibold">
-            {moment(createdAt).fromNow()}
+            {moment(approvedDate || createdAt).fromNow()}
           </div>
           {oldListingPrice && (
             <div

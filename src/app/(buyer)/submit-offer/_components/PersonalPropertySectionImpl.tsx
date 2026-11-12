@@ -61,16 +61,9 @@ function TextAreaWithOriginal({
   );
 }
 
-interface PersonalPropertySectionProps {
-  /** Shown as "Original: ..." helper text under each textarea, e.g. when editing a prior draft. */
-  originalPersonalProperty?: string;
-  originalItemsToBeRemoved?: string;
-}
 
-function PersonalPropertySectionImpl({
-  originalPersonalProperty,
-  originalItemsToBeRemoved,
-}: PersonalPropertySectionProps) {
+
+function PersonalPropertySectionImpl() {
   const { control } = useFormContext<OfferFormValues>();
 
   return (
@@ -104,13 +97,12 @@ function PersonalPropertySectionImpl({
         name="personalPropertyIncluded"
         label="Personal property included"
         placeholder="e.g. Refrigerator, Washer/Dryer..."
-        originalValue={originalPersonalProperty}
+
       />
       <TextAreaWithOriginal
         name="itemsToBeRemoved"
         label="Items to be removed"
         placeholder="e.g. Broken shed, debris in basement..."
-        originalValue={originalItemsToBeRemoved}
       />
     </FormSectionCard>
   );

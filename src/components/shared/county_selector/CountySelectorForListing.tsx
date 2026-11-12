@@ -16,6 +16,7 @@ export const COUNTY_DATA = {
     "Montgomery",
     "Preble",
     "Warren",
+    "Brown"
   ],
   KENTUCKY: [
     "Boone",
@@ -25,6 +26,7 @@ export const COUNTY_DATA = {
     "Gallatin",
     "Kenton",
     "Pendleton",
+    "Grant"
   ],
 };
 

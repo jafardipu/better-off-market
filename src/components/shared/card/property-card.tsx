@@ -23,8 +23,8 @@ export function PropertyCard({
   status,
   createdAt,
   propertiesSpecificationsClassName,
-  isPropertyStatusVisible = false,
   active,
+  approvedDate,
 }: IPropertyResponse & {
   className?: string;
   propertiesSpecificationsClassName?: string;
@@ -36,6 +36,8 @@ export function PropertyCard({
     propertyType,
     specifications,
   ).filter((spec) => Boolean(spec.value));
+
+  console.log(approvedDate);
 
   return (
     <Link
@@ -60,7 +62,7 @@ export function PropertyCard({
 
         <div className="absolute top-3 left-3 flex gap-1">
           <div className="bg-[#1F4E8B] text-white px-2.5 py-1 rounded-full text-xs font-semibold">
-            {moment(createdAt).fromNow()}
+            {moment(approvedDate || createdAt).fromNow()}
           </div>
           {oldListingPrice && (
             <div
@@ -110,17 +112,17 @@ export function PropertyCard({
           <p className="xl:text-xl text-lg font-bold text-[#1F4E8B] flex items-center flex-wrap gap-x-2">
             <span> {priceFormatter.format(listingPrice)} </span>
 
-            {oldListingPrice && (
+            {oldListingPrice ? (
               <span className="text-lg text-primary-gray font-medium ml-2  line-through ">
                 {priceFormatter.format(oldListingPrice)}
               </span>
-            )}
+            ) : null}
 
-            {arv && (
+            {arv ? (
               <span className={cn("text-primary-gray  font-medium ")}>
                 (ARV: {priceFormatter.format(arv)})
               </span>
-            )}
+            ) : null}
           </p>
         </div>
 

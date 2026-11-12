@@ -178,7 +178,7 @@ export default function ProfileEditForm() {
           />
         </div>
         <div>
-          <h2 className="text-3xl font-semibold text-primary-black">
+          <h2 className="md:text-3xl text-2xl font-semibold text-primary-black">
             {fullName}
           </h2>
         </div>

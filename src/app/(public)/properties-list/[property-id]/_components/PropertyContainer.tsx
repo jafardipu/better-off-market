@@ -58,6 +58,7 @@ export default function PropertyContainer({
             totalViews={property?.totalViews}
             createdAt={property?.createdAt}
             status={property?.status}
+            approvedDate={property?.approvedDate}
           />
           <AuthenticationRequired />
           {hasUpcomingOpenHouse && property.openHouse && (

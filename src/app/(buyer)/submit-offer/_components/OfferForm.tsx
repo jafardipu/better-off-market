@@ -20,8 +20,7 @@ import { SupportingDocumentsSection } from "./SupportingDocumentsSectionImpl";
 
 interface OfferFormProps {
   defaultValues?: Partial<OfferFormValues> | null;
-  originalPersonalProperty?: string;
-  originalItemsToBeRemoved?: string;
+
   onSubmit: (
     values: OfferFormValues,
     supportingDocuments: File[],
@@ -32,8 +31,6 @@ interface OfferFormProps {
 
 export function OfferForm({
   defaultValues,
-  originalPersonalProperty,
-  originalItemsToBeRemoved,
   onSubmit,
   onCancel,
   onError,
@@ -67,8 +64,7 @@ export function OfferForm({
         <ContingenciesSection />
         <RealEstateAgentSection />
         <PersonalPropertySection
-          originalPersonalProperty={originalPersonalProperty}
-          originalItemsToBeRemoved={originalItemsToBeRemoved}
+
         />
         <ClosingTermsSection />
         <SingleTextareaSection

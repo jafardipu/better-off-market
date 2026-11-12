@@ -217,7 +217,7 @@ export const offerFormDefaultValues: Partial<OfferFormValues> = {
   sellerContribution: 0,
   inspectionContingency: "yes",
   appraisalContingency: "yes",
-  hasAgent: "yes",
+  hasAgent: "no",
   agentName: "",
   brokerageName: "",
   commission: "",

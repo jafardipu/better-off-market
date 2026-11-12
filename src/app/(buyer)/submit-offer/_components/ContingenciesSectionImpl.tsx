@@ -64,15 +64,18 @@ function ContingenciesSectionImpl() {
           <FormItem className="sm:col-span-2">
             <FormLabel className="block text-[#4A4646] font-medium">
               Days for inspections
+              {inspectionContingency === "yes" && (
+                <span className="text-destructive"> *</span>
+              )}
             </FormLabel>
             <FormControl>
               <Input
                 {...field}
                 type="number"
                 inputMode="numeric"
-                min="0"
+                min="1"
                 disabled={inspectionContingency !== "yes"}
-                placeholder="Enter"
+                placeholder="Enter number of days"
                 className=" border border-primary-border-color bg-[#F2F4F6] py-5.5"
               />
             </FormControl>
@@ -121,7 +124,7 @@ function ContingenciesSectionImpl() {
                 {...field}
                 type="number"
                 inputMode="numeric"
-                min="0"
+                min="1"
                 disabled={appraisalContingency !== "yes"}
                 placeholder="Enter"
                 className=" border border-primary-border-color bg-[#F2F4F6] py-5.5"

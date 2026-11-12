@@ -172,6 +172,8 @@ export interface IPropertyResponse {
 
   seller: IUser;
 
+  approvedDate?: string;
+
   // Usually present from Mongoose timestamps, add if your schema has `timestamps: true`
   createdAt: string;
   updatedAt: string;
