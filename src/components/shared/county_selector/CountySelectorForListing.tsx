@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 export const COUNTY_DATA = {
   OHIO: [
     "Adams",
+    "Brown",
     "Butler",
     "Clermont",
     "Clinton",
@@ -16,7 +17,6 @@ export const COUNTY_DATA = {
     "Montgomery",
     "Preble",
     "Warren",
-    "Brown"
   ],
   KENTUCKY: [
     "Boone",
@@ -24,9 +24,9 @@ export const COUNTY_DATA = {
     "Campbell",
     "Carroll",
     "Gallatin",
+    "Grant",
     "Kenton",
     "Pendleton",
-    "Grant"
   ],
 };
 

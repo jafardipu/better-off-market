@@ -84,7 +84,7 @@ export default function Footer() {
                     href={"https://www.betteroffmarket.com"}
                     className=" transition-colors text-sm text-primary-color font-bold"
                   >
-                    BetteroffMarket.com
+                    BetterOffMarket.com
                   </Link>
                 </li>
               </ul>

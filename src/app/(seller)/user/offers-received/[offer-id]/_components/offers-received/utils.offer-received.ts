@@ -60,9 +60,9 @@ export interface OfferTerms {
   brokerageName?: string;
   personalPropertyIncluded?: string;
   itemsToBeRemoved?: string;
-  titleCompany: string;
-  closingDate: string;
-  possession: string;
+  titleCompany?: string | null;
+  closingDate?: string | null;
+  possession?: string | null;
   sellerPostClosingDays?: number;
   notesToSeller?: string;
   notesToBuyer?: string;
@@ -96,12 +96,14 @@ const FINANCING_TYPE_LABELS: Record<string, string> = {
   va: "VA",
 };
 
-export function formatFinancingType(type: string, otherType?: string) {
+export function formatFinancingType(type?: string | null, otherType?: string) {
+  if (!type) return "—";
   if (type === "other" && otherType) return otherType;
   return FINANCING_TYPE_LABELS[type] ?? type;
 }
 
-export function formatPossession(possession: string) {
+export function formatPossession(possession?: string | null) {
+  if (!possession) return "—";
   if (possession === "at_closing") return "At closing";
   return possession
     .split("_")
@@ -123,7 +125,7 @@ export function formatSellerPostClosingOccupancy(
 }
 
 export function formatClosingCosts(
-  option: string,
+  option?: string | null,
   sellerContribution?: number,
 ) {
   if (option === "requested") {
@@ -131,6 +133,7 @@ export function formatClosingCosts(
       ? `Buyer requests seller contribution of ${formatCurrency(sellerContribution)}`
       : "Buyer requests seller contribution";
   }
+  if (!option) return "—";
   return "Buyer does NOT request seller contribution";
 }
 
@@ -140,7 +143,7 @@ export function formatCommission(commission?: string, paidBy?: string) {
 }
 
 // "Refrigerator, Washer/Dryer" -> ["Refrigerator", "Washer/Dryer"]
-export function splitToList(value?: string) {
+export function splitToList(value?: string | null) {
   if (!value) return [];
   return value
     .split(",")
@@ -149,7 +152,8 @@ export function splitToList(value?: string) {
 }
 
 // "2010-04-25" -> "April 25, 2010" ; non-date strings like "ASAP" pass through unchanged
-export function formatDate(dateString: string) {
+export function formatDate(dateString?: string | null) {
+  if (!dateString) return "—";
   const date = new Date(dateString);
   if (Number.isNaN(date.getTime())) return dateString;
   return date.toLocaleDateString("en-US", {
@@ -197,12 +201,12 @@ export function mapTermsToConsolidatedOfferData(
       // days: terms.appraisalDays,
     },
     closingTerms: {
-      titleCompany: terms.titleCompany,
+      titleCompany: terms.titleCompany ?? "—",
       closingDate: formatDate(terms.closingDate),
       possession: formatPossession(terms.possession),
       sellerPostClosingDays: terms?.sellerPostClosingDays,
       sellerPostClosingOccupancy: formatSellerPostClosingOccupancy(
-        terms.possession,
+        terms.possession ?? undefined,
         terms.sellerPostClosingDays,
       ),
     },

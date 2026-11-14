@@ -21,6 +21,7 @@ interface ContingenciesEditableProps {
   isEditing: boolean;
   isChanged: boolean;
   onEdit: () => void;
+  onDone?: () => void;
   onCancel: () => void;
 }
 
@@ -29,6 +30,7 @@ export function ContingenciesEditable({
   isEditing,
   isChanged,
   onEdit,
+  onDone,
   onCancel,
 }: ContingenciesEditableProps) {
   const { control } = useFormContext<OfferFormValues>();
@@ -41,6 +43,7 @@ export function ContingenciesEditable({
       isEditing={isEditing}
       isChanged={isChanged}
       onEdit={onEdit}
+      onDone={onDone}
       onCancel={onCancel}
       viewContent={
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

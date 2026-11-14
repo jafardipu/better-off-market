@@ -72,8 +72,7 @@ export default function OfferedCard({ data }: { data: IOffer }) {
           <MapPin className="w-4 h-4" />
           <span className="text-sm line-clamp-1 ">
             {data?.property?.streetAddress}, {data?.property?.city},{" "}
-            {data?.property?.state}, {data?.property?.zipCode},{" "}
-            {data?.property?.county}
+            {data?.property?.state} {data?.property?.zipCode}
           </span>
         </Link>
 

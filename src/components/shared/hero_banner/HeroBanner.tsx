@@ -15,6 +15,8 @@ type TProps = {
     authPage?: boolean;
     children?: React.ReactNode;
     titleClassName?: string;
+    /** Pill under the right-side blurb (e.g. home region badge). */
+    regionBadge?: string;
   };
 };
 
@@ -110,14 +112,30 @@ export default function HeroBanner({ data }: TProps) {
             </motion.h1>
           </div>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.1, ease: [0.22, 1, 0.36, 1] }}
-            className="font-medium mt-4 lg:mt-0"
-          >
-            {data?.description}
-          </motion.p>
+          <div className="mt-4 lg:mt-0">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 1.1, ease: [0.22, 1, 0.36, 1] }}
+              className="font-medium text-lg"
+            >
+              {data?.description}
+            </motion.p>
+            {data?.regionBadge ? (
+              <motion.h6
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.5,
+                  delay: 1.25,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="mt-4 text-sm text-primary-color font-semibold bg-[#D1E5FF] max-w-max px-4 py-1.5 rounded-full"
+              >
+                {data.regionBadge}
+              </motion.h6>
+            ) : null}
+          </div>
         </Container>
       </div>
     </div>

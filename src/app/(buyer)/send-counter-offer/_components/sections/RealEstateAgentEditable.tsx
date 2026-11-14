@@ -13,6 +13,7 @@ interface RealEstateAgentEditableProps {
   isEditing: boolean;
   isChanged: boolean;
   onEdit: () => void;
+  onDone?: () => void;
   onCancel: () => void;
 }
 
@@ -21,6 +22,7 @@ export function RealEstateAgentEditable({
   isEditing,
   isChanged,
   onEdit,
+  onDone,
   onCancel,
 }: RealEstateAgentEditableProps) {
   const { control } = useFormContext<OfferFormValues>();
@@ -33,6 +35,7 @@ export function RealEstateAgentEditable({
       isEditing={isEditing}
       isChanged={isChanged}
       onEdit={onEdit}
+      onDone={onDone}
       onCancel={onCancel}
       viewContent={
         <div className="grid grid-cols-2 gap-x-6 gap-y-4">

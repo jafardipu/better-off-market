@@ -18,7 +18,7 @@ export function SummaryField({
         {label}
       </p>
       <p className={cn("mt-1  md:text-lg text-sm text-primary-black capitalize")}>
-        {value?.split("_").join(" ")}
+        {value?.split?.("_").join(" ") || "—"}
       </p>
     </div>
   );

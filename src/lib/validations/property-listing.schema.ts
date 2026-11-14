@@ -53,7 +53,7 @@ export const propertyListingSchema = z
     city: z.string().min(1, "City is required"),
     zipCode: z.string().min(5, "Enter a valid ZIP code"),
     // county: z.string().min(1, "County is required"),
-    parcelIds: z.string().min(1, "Parcel ID(s) are required"),
+    parcelIds: z.string().optional(),
     listingPrice: z.coerce
       .number({ error: "Enter a valid amount" })
       .positive("Listing price is required"),
@@ -160,13 +160,6 @@ export const propertyListingSchema = z
       }
     }
 
-    if (config.showParcelId && !data.parcelIds?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["parcelIds"],
-        message: "Parcel ID(s) are required for this property type",
-      });
-    }
     if (config.showBuyItNowPrice && !data.buyItNowPrice) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

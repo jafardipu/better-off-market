@@ -11,14 +11,24 @@ import {
 import CounterOfferEditorSkeleton from "@/components/skeleton/CounterOfferEditorSkeleton";
 import { errorModification } from "@/lib/errors/errorModification";
 import { toast } from "sonner";
+import { normalizeOfferTermsForForm } from "./counter-offer-helpers";
+import Empty from "@/components/ui/empty-data";
 
 export default function SendCounterFormContainer() {
   const router = useRouter();
   const offerId = useSearchParams().get("offer");
-  const { data, isLoading } = useGetSingleOfferQuery(offerId, {
+  const { data, isLoading, isError } = useGetSingleOfferQuery(offerId, {
     skip: !offerId,
   });
   const [sentCounterOffer] = useSentCounterOfferMutation();
+
+  if (!offerId) {
+    return (
+      <Container className="mt-8">
+        <Empty message="Missing offer id. Open Counter offer from an offer details page." />
+      </Container>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -28,10 +38,21 @@ export default function SendCounterFormContainer() {
     );
   }
 
-  const handleSentCounter = async (
-    values: OfferFormValues,
-    // changedFields: Partial<OfferFormValues>,
-  ) => {
+  const offer = data?.data;
+  if (isError || !offer?.currentTerms) {
+    return (
+      <Container className="mt-8">
+        <Empty message="Unable to load this offer for countering." />
+      </Container>
+    );
+  }
+
+  const originalValues = normalizeOfferTermsForForm(
+    offer.currentTerms,
+    offer.lastActionBy,
+  );
+
+  const handleSentCounter = async (values: OfferFormValues) => {
     toast.loading("Submitting counter offer...", { id: "counter-offer" });
     try {
       await sentCounterOffer({
@@ -53,19 +74,12 @@ export default function SendCounterFormContainer() {
       <h3 className="md:text-[28px] text-2xl font-bold text-primary-black mb-3">
         Send Counter Offer
       </h3>
-      <OfferPropertyCard property={data?.data?.property} />
+      <OfferPropertyCard property={offer.property} />
       <CounterOfferEditor
-        originalValues={data?.data?.currentTerms}
-        user={
-          data?.data?.lastActionBy === "buyer"
-            ? data?.data?.buyer
-            : data?.data?.seller
-        }
-        documents={data?.data?.supportingDocuments || []}
-        onSubmit={(values, changedFields) => {
-          // handleSentCounter(values, changedFields);
-          handleSentCounter(values);
-        }}
+        originalValues={originalValues}
+        user={offer.lastActionBy === "buyer" ? offer.buyer : offer.seller}
+        documents={offer.supportingDocuments || []}
+        onSubmit={(values) => handleSentCounter(values)}
         onCancel={() => router.back()}
       />
     </Container>

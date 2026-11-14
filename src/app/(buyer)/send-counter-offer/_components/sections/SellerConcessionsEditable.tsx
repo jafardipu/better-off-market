@@ -16,6 +16,7 @@ interface SellerConcessionsEditableProps {
   isEditing: boolean;
   isChanged: boolean;
   onEdit: () => void;
+  onDone?: () => void;
   onCancel: () => void;
   /** Shown under the title while the section is in its highlighted "changed" state. */
   description?: string;
@@ -26,6 +27,7 @@ export function SellerConcessionsEditable({
   isEditing,
   isChanged,
   onEdit,
+  onDone,
   onCancel,
   description = "Contribution towards buyer's closing costs and prepaid items.",
 }: SellerConcessionsEditableProps) {
@@ -46,6 +48,7 @@ export function SellerConcessionsEditable({
       isEditing={isEditing}
       isChanged={isChanged}
       onEdit={onEdit}
+      onDone={onDone}
       onCancel={onCancel}
       viewContent={
         <div className="grid grid-cols-2 gap-x-6 gap-y-4">

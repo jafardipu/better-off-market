@@ -1,4 +1,5 @@
 "use client";
+import { priceFormatter } from "@/components/shared/utils/priceFormatter";
 import RecentOffersTableSkeleton from "@/components/skeleton/RecentOffersTableSkeleton";
 import { Button } from "@/components/ui/button";
 import Empty from "@/components/ui/empty-data";
@@ -8,7 +9,7 @@ import { IOffer, IUser } from "@/types";
 import moment from "moment";
 import Link from "next/link";
 
-interface Transaction {
+interface offer {
   id: string;
   buyer: string;
   location: string;
@@ -54,49 +55,51 @@ export default function RecentOffers() {
             </tr>
           </thead>
           <tbody>
-            {OffersData?.map((transaction: IOffer) => (
+            {OffersData?.map((offer: IOffer) => (
               <tr
-                key={transaction?._id}
+                key={offer?._id}
                 className="border-b hover:bg-gray-50 transition-colors"
               >
                 <td className="px-6 py-4">
                   <Link
-                    href={`/seller-profile?seller=${transaction?.buyer?._id}`}
+                    href={`/seller-profile?seller=${offer?.buyer?._id}`}
                   >
                     <div className="font-semibold text-primary-black">
-                      {(transaction?.buyer as IUser)?.name}
+                      {(offer?.buyer as IUser)?.name}
                     </div>
                   </Link>
 
                   <Link
-                    href={`/seller-profile?seller=${transaction?.buyer?._id}`}
+                    href={`/seller-profile?seller=${offer?.buyer?._id}`}
                   >
                     <div className="text-sm text-primary-gray line-clamp-1 max-w-70">
-                      {(transaction?.buyer as IUser)?.company ||
-                        (transaction?.buyer as IUser)?.location}{" "}
+                      {(offer?.buyer as IUser)?.company ||
+                        (offer?.buyer as IUser)?.location}{" "}
                     </div>
                   </Link>
                 </td>
                 <td className="px-6 py-4 font-semibold text-primary-black">
-                  {transaction?.currentTerms?.offerAmount}
+                  {priceFormatter.format(Number(offer?.currentTerms?.offerAmount))}
                 </td>
                 <td className="px-6 py-4 text-primary-gray truncate">
-                  {moment(transaction?.createdAt).fromNow()}
+                  {moment(offer?.createdAt).fromNow()}
                 </td>
                 <td className="px-6 py-4">
                   <span
                     className={`inline-flex items-center px-2 py-1 text-xs font-bold rounded-full $`}
                   >
-                    {getOfferStatusBadge(transaction?.status)}
+                    {getOfferStatusBadge(offer?.status)}
                   </span>
                 </td>
                 <td className="px-6 py-4">
-                  <Button
-                    variant="ghost"
-                    className={`text-orange-600 hover:text-orange-700 hover:bg-orange-50 p-0 h-auto font-bold cursor-pointer`}
-                  >
-                    Review
-                  </Button>
+                  <Link href={`/user/offers-received/${offer?._id}`}>
+                    <Button
+                      variant="ghost"
+                      className={`text-orange-600 hover:text-orange-700 hover:bg-orange-50 p-0 h-auto font-bold cursor-pointer`}
+                    >
+                      Review
+                    </Button>
+                  </Link>
                 </td>
               </tr>
             ))}
@@ -106,33 +109,33 @@ export default function RecentOffers() {
 
       {/* Mobile Card View */}
       <div className="md:hidden space-y-4">
-        {OffersData?.map((transaction: IOffer) => (
+        {OffersData?.map((offer: IOffer) => (
           <div
-            key={transaction?._id}
+            key={offer?._id}
             className="border rounded-lg p-4 bg-white hover:shadow-md transition-shadow"
           >
             <div className="flex justify-between items-start mb-3">
               <div>
                 <Link
-                  href={`/seller-profile?seller=${transaction?.buyer?._id}`}
+                  href={`/seller-profile?seller=${offer?.buyer?._id}`}
                 >
                   <h3 className="font-semibold text-primary-black">
-                    {(transaction?.buyer as IUser)?.name}
+                    {(offer?.buyer as IUser)?.name}
                   </h3>
                 </Link>
                 <Link
-                  href={`/seller-profile?seller=${transaction?.buyer?._id}`}
+                  href={`/seller-profile?seller=${offer?.buyer?._id}`}
                 >
                   <p className="text-sm text-primary-gray line-clamp-1">
-                    {(transaction?.buyer as IUser)?.company ||
-                      (transaction?.buyer as IUser)?.location}{" "}
+                    {(offer?.buyer as IUser)?.company ||
+                      (offer?.buyer as IUser)?.location}{" "}
                   </p>
                 </Link>
               </div>
               <span
                 className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold `}
               >
-                {getOfferStatusBadge(transaction?.status)}
+                {getOfferStatusBadge(offer?.status)}
               </span>
             </div>
 
@@ -140,13 +143,13 @@ export default function RecentOffers() {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-primary-gray">Amount</span>
                 <span className="font-semibold text-primary-black">
-                  {transaction?.currentTerms?.offerAmount}
+                  {offer?.currentTerms?.offerAmount}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-primary-gray">Time</span>
                 <span className="text-sm text-primary-black">
-                  {moment(transaction?.createdAt).fromNow()}
+                  {moment(offer?.createdAt).fromNow()}
                 </span>
               </div>
             </div>

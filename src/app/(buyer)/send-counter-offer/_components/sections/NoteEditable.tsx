@@ -10,6 +10,7 @@ interface NoteEditableProps {
   isEditing: boolean;
   isChanged: boolean;
   onEdit: () => void;
+  onDone?: () => void;
   onCancel: () => void;
 }
 
@@ -18,6 +19,7 @@ export function NoteEditable({
   isEditing,
   isChanged,
   onEdit,
+  onDone,
   onCancel,
 }: NoteEditableProps) {
   const { control } = useFormContext<OfferFormValues>();
@@ -43,6 +45,7 @@ export function NoteEditable({
       isEditing={isEditing}
       isChanged={isChanged}
       onEdit={onEdit}
+      onDone={onDone}
       onCancel={onCancel}
       viewContent={
         <div className="grid grid-cols-2 gap-x-6 gap-y-4">

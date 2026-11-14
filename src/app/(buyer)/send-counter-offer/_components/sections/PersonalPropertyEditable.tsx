@@ -10,6 +10,7 @@ interface PersonalPropertyEditableProps {
   isEditing: boolean;
   isChanged: boolean;
   onEdit: () => void;
+  onDone?: () => void;
   onCancel: () => void;
 }
 
@@ -25,6 +26,7 @@ export function PersonalPropertyEditable({
   isEditing,
   isChanged,
   onEdit,
+  onDone,
   onCancel,
 }: PersonalPropertyEditableProps) {
   const { control } = useFormContext<OfferFormValues>();
@@ -39,6 +41,7 @@ export function PersonalPropertyEditable({
       isEditing={isEditing}
       isChanged={isChanged}
       onEdit={onEdit}
+      onDone={onDone}
       onCancel={onCancel}
       viewContent={
         <div className="flex flex-wrap justify-between gap-4">

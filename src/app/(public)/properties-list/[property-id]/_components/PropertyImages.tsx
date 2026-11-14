@@ -46,8 +46,10 @@ export default function PropertyImages({
             {/* Mobile-only Share (desktop share sits on image 3) */}
             <div className="lg:hidden">
               <Share
-                title="property-details"
+                title="Better Off Market listing"
                 link={pathName}
+                image={propertyImages?.[0]}
+                listingLabel={propertyType}
                 className="absolute right-3 top-3 bg-primary-color text-white z-50 cursor-pointer hover:bg-primary-color/80"
               />
             </div>
@@ -95,8 +97,10 @@ export default function PropertyImages({
             {/* Desktop Share button */}
             <div className="hidden lg:block">
               <Share
-                title="property-details"
+                title="Better Off Market listing"
                 link={pathName}
+                image={propertyImages?.[0]}
+                listingLabel={propertyType}
                 className="absolute right-4 top-4 bg-primary-color text-white z-999 cursor-pointer hover:bg-primary-color/80"
               />
             </div>

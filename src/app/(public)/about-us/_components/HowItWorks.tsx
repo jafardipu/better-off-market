@@ -7,21 +7,21 @@ export default function HowItWorks() {
   const steps = [
     {
       number: 1,
-      title: "List Property",
+      title: "Discover & List",
       description:
-        "Sellers list their property with professional photos, detailed documentation, and direct pricing expectations.",
+        "Explore off-market opportunities or showcase your property to a network of motivated buyers, sellers, and investors.",
     },
     {
       number: 2,
-      title: "Submit Offers",
+      title: "Connect & Negotiate",
       description:
-        "Buyers browse, search with precision filters, and submit binding offers directly to sellers on our secure platform.",
+        "Communicate directly, exchange offers, and negotiate terms—all through one streamlined platform.",
     },
     {
       number: 3,
-      title: "Close Externally",
+      title: "Coordinate Closing",
       description:
-        "Deals close externally via a trusted title company — we maintain neutrality and never touch the transaction funds.",
+        "Once terms are agreed upon, work directly with the other party and a trusted title company to finalize your transaction.",
     },
   ];
 

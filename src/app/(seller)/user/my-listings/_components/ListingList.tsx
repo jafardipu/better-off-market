@@ -26,7 +26,7 @@ export default function ListingList({
           status={property?.status}
           image={property?.photos?.[0]}
           type={property?.propertyType}
-          location={`${property?.streetAddress}, ${property?.city}, ${property?.state} `}
+          location={`${property?.streetAddress}, ${property?.city}, ${property?.state} ${property?.zipCode} `}
           price={property?.listingPrice}
           views={property?.totalViews}
           saved={property?.totalSaved}

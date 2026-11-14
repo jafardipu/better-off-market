@@ -19,7 +19,7 @@ export default function ContactUs() {
             </h2>
 
             <p className="text-primary-gray md:mb-12 mb-8 text-lg leading-relaxed">
-              Our dedicated support specialists are available 24/7 to help you
+              Our dedicated support specialists are available to help you
               navigate the property market with confidence.
             </p>
 

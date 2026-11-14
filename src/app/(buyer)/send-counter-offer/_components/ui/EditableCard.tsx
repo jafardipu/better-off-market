@@ -9,6 +9,8 @@ interface EditableCardProps {
   isChanged: boolean;
   onEdit: () => void;
   onCancel: () => void;
+  /** Keep edits and leave edit mode. */
+  onDone?: () => void;
   /** Rendered when isEditing is true. */
   editContent: ReactNode;
   /** Rendered when isChanged is true and isEditing is false. */
@@ -31,6 +33,7 @@ export function EditableCard({
   isChanged,
   onEdit,
   onCancel,
+  onDone,
   editContent,
   changedContent,
   viewContent,
@@ -74,16 +77,27 @@ export function EditableCard({
           </button>
         ) : null}
 
-          {isEditing ? (
-        <button
-          type="button"
-          onClick={onCancel}
-          className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-red-500 cursor-pointer hover:text-destructive"
-        >
-          <X size={13} />
-          Cancel
-        </button>
-      ) : null}
+        {isEditing ? (
+          <div className="mb-4 flex items-center gap-3">
+            {onDone ? (
+              <button
+                type="button"
+                onClick={onDone}
+                className="inline-flex items-center gap-1 text-sm font-medium text-[#1F4E8B] cursor-pointer hover:underline"
+              >
+                Done
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={onCancel}
+              className="inline-flex items-center gap-1 text-sm font-medium text-red-500 cursor-pointer hover:text-destructive"
+            >
+              <X size={13} />
+              Cancel
+            </button>
+          </div>
+        ) : null}
       </div>
 
     

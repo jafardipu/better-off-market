@@ -17,6 +17,8 @@ export function ActionBtns({
   seller,
   status,
   approvedDate,
+  image,
+  listingLabel,
 }: {
   id: string;
   totalViews: number;
@@ -24,6 +26,8 @@ export function ActionBtns({
   seller: IUser;
   status: TPropertyStatus;
   approvedDate?: string;
+  image?: string;
+  listingLabel?: string;
 }) {
   const pathName = usePathname();
   const user: any = useAppSelector((state) => state.auth.user);
@@ -56,8 +60,16 @@ export function ActionBtns({
       <div className="flex gap-2.5">
         <div className="flex-1">
           {/* Share This Listing button */}
-          <Share title="property-details" link={pathName}>
-            <button className="w-full border-2 border-primary-gray hover:border-gray-400 hover:bg-gray-50 text-gray-900 font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 duration-500 cursor-pointer">
+          <Share
+            title="Better Off Market listing"
+            link={pathName}
+            image={image}
+            listingLabel={listingLabel}
+          >
+            <button
+              type="button"
+              className="w-full border-2 border-primary-gray hover:border-gray-400 hover:bg-gray-50 text-gray-900 font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 duration-500 cursor-pointer"
+            >
               <Share2 size={20} />
               Share
             </button>

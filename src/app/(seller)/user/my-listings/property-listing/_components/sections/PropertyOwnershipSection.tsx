@@ -53,7 +53,8 @@ export function PropertyOwnershipSection() {
                     </span>
                   </div>
                   <p className="text-sm text-gray-500">
-                    You are the primary title holder of this commercial asset.
+                    You are the legal owner of the property and are listing it
+                    directly.
                   </p>
                 </div>
               </button>

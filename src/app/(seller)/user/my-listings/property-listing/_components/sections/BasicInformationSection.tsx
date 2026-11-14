@@ -82,7 +82,6 @@ export function BasicInformationSection() {
         {config.showParcelId && (
           <TextField
             label="Parcel ID(s) Included in Sale"
-            required
             placeholder="e.g. 12-345-678"
             registration={register("parcelIds")}
             error={errors.parcelIds?.message}

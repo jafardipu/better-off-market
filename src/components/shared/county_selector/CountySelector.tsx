@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 export const COUNTY_DATA = {
   OHIO: [
     "Adams",
+    "Brown",
     "Butler",
     "Clermont",
     "Clinton",
@@ -21,6 +22,7 @@ export const COUNTY_DATA = {
     "Campbell",
     "Carroll",
     "Gallatin",
+    "Grant",
     "Kenton",
     "Pendleton",
   ],

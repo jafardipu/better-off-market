@@ -22,6 +22,7 @@ export function SavePropertyCard({
   specifications,
   createdAt,
   status,
+  zipCode,
   propertiesSpecificationsClassName,
   saveDate,
   approvedDate,
@@ -124,7 +125,7 @@ export function SavePropertyCard({
 
         {/* Address */}
         <h3 className="xl:text-lg font-semibold text-primary-black line-clamp-1">
-          {streetAddress}, {city}, {state}
+          {streetAddress}, {city}, {state} {zipCode}
         </h3>
 
         {/* Property Details */}

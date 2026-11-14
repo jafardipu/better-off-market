@@ -161,7 +161,7 @@ export const PROPERTY_SPECIFICATIONS_CONFIG: Record<PropertyType, SpecRow[]> = {
         },
         {
           name: "parking",
-          label: "Parking",
+          label: "Other Parking",
           type: "select",
           options: selectOpts([
             "Driveway",
@@ -362,7 +362,7 @@ export const PROPERTY_SPECIFICATIONS_CONFIG: Record<PropertyType, SpecRow[]> = {
         },
         {
           name: "parking",
-          label: "Parking",
+          label: "Other Parking",
           type: "select",
           options: PARKING_OPTIONS,
         },

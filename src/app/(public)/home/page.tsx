@@ -1,6 +1,8 @@
 import CategorySection from "@/components/modules/home/CategorySection";
 import FAQSection from "@/components/modules/home/faqs/FaqsSection";
 import { GetInTouch } from "@/components/modules/home/get_in_touch/GetInTouch";
+import LaunchAnnouncement from "@/components/modules/home/LaunchAnnouncement";
+import LaunchMarquee from "@/components/modules/home/LaunchMarquee";
 import NewlyAddedSection from "@/components/modules/home/NewlyAddedSection";
 import PriceDropsSection from "@/components/modules/home/PriceDropsSection";
 import ContactUs from "@/components/shared/contact/ContactUs";
@@ -19,17 +21,22 @@ export default function Home() {
       "Where property owners, wholesalers, investors, and buyers connect to discover opportunities, negotiate, and sell directly.",
     children: <LocationSearch />,
     titleClassName: "2xl:text-6xl lg:text-5xl md:text-4xl text-3xl font-semibold max-w-2xl",
+    regionBadge: "CINCINNATI + NORTHERN KY",
     // className: "min-h-[90vh]",
   };
   return (
-    <div className="space-y-16">
-      <HeroBanner data={bannerData} />
-      <NewlyAddedSection />
-      <PriceDropsSection /> 
-      <CategorySection />
-      <GetInTouch />
-      <FAQSection />
-      <ContactUs />
+    <div>
+      <LaunchMarquee />
+      <div className="space-y-16">
+        <HeroBanner data={bannerData} />
+        <LaunchAnnouncement />
+        <NewlyAddedSection />
+        <PriceDropsSection />
+        <CategorySection />
+        <GetInTouch />
+        <FAQSection />
+        <ContactUs />
+      </div>
     </div>
   );
 }

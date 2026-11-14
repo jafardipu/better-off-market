@@ -12,6 +12,7 @@ interface ClosingTermsEditableProps {
   isEditing: boolean;
   isChanged: boolean;
   onEdit: () => void;
+  onDone?: () => void;
   onCancel: () => void;
 }
 
@@ -20,6 +21,7 @@ export function ClosingTermsEditable({
   isEditing,
   isChanged,
   onEdit,
+  onDone,
   onCancel,
 }: ClosingTermsEditableProps) {
   const { control } = useFormContext<OfferFormValues>();
@@ -36,6 +38,7 @@ export function ClosingTermsEditable({
       isEditing={isEditing}
       isChanged={isChanged}
       onEdit={onEdit}
+      onDone={onDone}
       onCancel={onCancel}
       viewContent={
         <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">

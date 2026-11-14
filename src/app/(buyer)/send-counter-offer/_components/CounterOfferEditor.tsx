@@ -1,8 +1,14 @@
 "use client";
 import { useCallback } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import {
+  FormProvider,
+  useForm,
+  type FieldErrors,
+  type SubmitHandler,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FileText, Download } from "lucide-react";
+import { toast } from "sonner";
 import {
   offerFormSchema,
   type OfferFormValues,
@@ -14,11 +20,12 @@ import { RealEstateAgentEditable } from "./sections/RealEstateAgentEditable";
 import { PersonalPropertyEditable } from "./sections/PersonalPropertyEditable";
 import { ClosingTermsEditable } from "./sections/ClosingTermsEditable";
 import { useEditableSections } from "@/hooks/useEditableSections";
-import { SectionKey } from "./counter-offer-helpers";
+import { SectionKey, sectionForField } from "./counter-offer-helpers";
 import { SummaryCard } from "../../review-offer/_components/SummaryCard";
 import { IDocument, IUser } from "@/types";
 import { NoteEditable } from "./sections/NoteEditable";
 import ProfileCard from "@/app/(public)/properties-list/[property-id]/_components/ProfileCard";
+import { zodFormErrorModification } from "@/lib/errors/zodFormErrorModification";
 
 export interface CounterOfferEditorProps {
   user: IUser;
@@ -61,27 +68,42 @@ export function CounterOfferEditor({
     defaultValues: { ...originalValues },
     mode: "onBlur",
     reValidateMode: "onChange",
+    shouldFocusError: true,
   });
 
-  const { editing, changed, startEdit, cancelEdit } = useEditableSections({
-    // @ts-ignore
-    control: form.control,
-    setValue: form.setValue,
-    originalValues,
-    initiallyChanged: initiallyChangedSections,
-  });
+  const { editing, changed, startEdit, cancelEdit, finishEdit, revealEdit } =
+    useEditableSections({
+      // @ts-ignore
+      control: form.control,
+      setValue: form.setValue,
+      originalValues,
+      initiallyChanged: initiallyChangedSections,
+    });
 
-  const handleSubmit = useCallback(
-    (values: OfferFormValues) =>
-      onSubmit(values, getChangedFields(values, originalValues)),
+  const handleSubmit: SubmitHandler<OfferFormValues> = useCallback(
+    (values) => onSubmit(values, getChangedFields(values, originalValues)),
     [onSubmit, originalValues],
+  );
+
+  const handleInvalid = useCallback(
+    (errors: FieldErrors<OfferFormValues>) => {
+      toast.error(zodFormErrorModification(errors));
+
+      const sections = new Set<SectionKey>();
+      for (const field of Object.keys(errors)) {
+        const section = sectionForField(field);
+        if (section) sections.add(section);
+      }
+      sections.forEach((section) => revealEdit(section));
+    },
+    [revealEdit],
   );
 
   return (
     <FormProvider {...form}>
       <form
         //   @ts-ignore
-        onSubmit={form.handleSubmit(handleSubmit)}
+        onSubmit={form.handleSubmit(handleSubmit, handleInvalid)}
         noValidate
         className=" grid grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-3 lg:items-start shadow-[0_10px_30px_0_rgba(15,23,42,0.05)] mt-8"
       >
@@ -92,15 +114,16 @@ export function CounterOfferEditor({
             isEditing={editing.offerDetails}
             isChanged={changed.offerDetails}
             onEdit={() => startEdit("offerDetails")}
+            onDone={() => finishEdit("offerDetails")}
             onCancel={() => cancelEdit("offerDetails")}
           />
 
           <SellerConcessionsEditable
             originalValues={originalValues}
             isEditing={editing.sellerConcessions}
-            // isChanged={changed.sellerConcessions}
-            isChanged={false}
+            isChanged={changed.sellerConcessions}
             onEdit={() => startEdit("sellerConcessions")}
+            onDone={() => finishEdit("sellerConcessions")}
             onCancel={() => cancelEdit("sellerConcessions")}
           />
 
@@ -109,6 +132,7 @@ export function CounterOfferEditor({
             isEditing={editing.contingencies}
             isChanged={changed.contingencies}
             onEdit={() => startEdit("contingencies")}
+            onDone={() => finishEdit("contingencies")}
             onCancel={() => cancelEdit("contingencies")}
           />
 
@@ -117,6 +141,7 @@ export function CounterOfferEditor({
             isEditing={editing.agent}
             isChanged={changed.agent}
             onEdit={() => startEdit("agent")}
+            onDone={() => finishEdit("agent")}
             onCancel={() => cancelEdit("agent")}
           />
 
@@ -125,6 +150,7 @@ export function CounterOfferEditor({
             isEditing={editing.personalProperty}
             isChanged={changed.personalProperty}
             onEdit={() => startEdit("personalProperty")}
+            onDone={() => finishEdit("personalProperty")}
             onCancel={() => cancelEdit("personalProperty")}
           />
 
@@ -133,6 +159,7 @@ export function CounterOfferEditor({
             isEditing={editing.closingTerms}
             isChanged={changed.closingTerms}
             onEdit={() => startEdit("closingTerms")}
+            onDone={() => finishEdit("closingTerms")}
             onCancel={() => cancelEdit("closingTerms")}
           />
 
@@ -164,6 +191,7 @@ export function CounterOfferEditor({
             isEditing={editing.notes}
             isChanged={changed.notes}
             onEdit={() => startEdit("notes")}
+            onDone={() => finishEdit("notes")}
             onCancel={() => cancelEdit("notes")}
           />
 

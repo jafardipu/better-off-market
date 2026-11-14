@@ -58,10 +58,14 @@ export function PropertyInfo({ property }: PropertyInfoProps) {
       .replace(/([a-z0-9])([A-Z])/g, "$1 $2") // camelCase -> camel Case
       .replace(/^./, (str) => str.toUpperCase()); // capitalize first letter
 
+  const SPEC_LABEL_OVERRIDES: Record<string, string> = {
+    parking: "Other Parking",
+  };
+
   const propertySpecsLeft = Object.entries(property?.specifications ?? {})
     .filter(([, value]) => Boolean(value))
     .map(([key, value]) => ({
-      label: formatCamelCaseToLabel(key),
+      label: SPEC_LABEL_OVERRIDES[key] ?? formatCamelCaseToLabel(key),
       value: String(value),
       note: key === "lotSize" ? "Acres" : undefined,
     }));

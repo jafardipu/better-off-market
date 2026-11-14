@@ -12,9 +12,10 @@ export function GetInTouch() {
               Be First to Know
             </h2>
             <p className="text-lg leading-relaxed">
-              Get instant email
-              notifications when properties matching your search criteria are
-              added
+              Stay ahead of new
+              opportunities. Select your preferred counties and property types,
+              and receive real-time email alerts whenever a matching property is
+              listed on BetterOffMarket
             </p>
           </div>
 

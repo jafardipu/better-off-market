@@ -26,7 +26,7 @@ export default function Header() {
           variants={fadeUp as any}
           className="text-sm text-primary-color font-semibold bg-[#D1E5FF] max-w-max px-4 py-1.5 rounded-full"
         >
-          DIRECT REAL ESTATE
+          OFF-MARKET PROPERTY · CINCINNATI + NORTHERN KY
         </motion.h6>
 
         <motion.h3
@@ -70,7 +70,7 @@ export default function Header() {
             />
           </div>
 
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, scale: 0.8, rotate: 0 }}
             animate={{ opacity: 1, scale: 1, rotate: -6 }}
             transition={{ duration: 0.6, delay: 0.6, ease: "backOut" }}
@@ -81,7 +81,7 @@ export default function Header() {
             <p className="text-xs font-semibold text-[#594139] leading-relaxed">
               "PropMarket completely changed how I look for off-market opportunities. The transparency is unmatched."
             </p>
-          </motion.div>
+          </motion.div> */}
         </motion.div>
       </div>
     </Container>

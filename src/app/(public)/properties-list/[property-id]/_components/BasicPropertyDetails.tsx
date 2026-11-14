@@ -27,8 +27,8 @@ export function BasicPropertyDetails({ property }: PropertyListingProps) {
             <div className="flex  gap-1.5 text-primary-gray xl:text-2xl lg:text-xl md:text-lg">
               <MapPin size={22} className=" mt-1 shrink-0" />
               <p className=" ">
-                {property?.streetAddress}, {property?.city}, {property?.state},{" "}
-                {property?.zipCode}, {property?.county}{" "}
+                {property?.streetAddress}, {property?.city}, {property?.state}{" "}
+                {property?.zipCode}
               </p>
             </div>
           </div>
@@ -38,7 +38,7 @@ export function BasicPropertyDetails({ property }: PropertyListingProps) {
               <span
                 className={cn(
                   "bg-[#DCFCE7] text-[#15803D] px-3 py-1 rounded-md font-bold text-xs whitespace-nowrap",
-                  statusColor[property?.status],
+                statusColor[property?.status],
                 )}
               >
                 {property?.status === "Pending" ? "Pending Approval" : property?.status}
@@ -49,13 +49,24 @@ export function BasicPropertyDetails({ property }: PropertyListingProps) {
 
         {/* ------------------ Pricing details ---------------- */}
         <div className="rounded-md shadow-[0_10px_30px_0_rgba(15,23,42,0.05)] lg:p-6 p-4 bg-white border border-[#EFEAE8]">
-          <p className="text-xl md:text-2xl font-bold text-[#1F4E8B]">
-            {priceFormatter.format(property?.listingPrice)}{" "}
-            {/* <span className="text-blue-900/40 font-normal mx-1">|</span> */}
-            <span className="text-xl md:text-2xl font-normal  text-primary-gray scroll-pl-2.5">
-              (ARV : {priceFormatter.format(property?.arv as number)})
-            </span>
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xl md:text-2xl font-bold text-[#1F4E8B]">
+              {priceFormatter.format(property?.listingPrice)}{" "}
+              <span className="text-xl md:text-2xl font-normal text-primary-gray scroll-pl-2.5">
+                (ARV : {priceFormatter.format(property?.arv as number)})
+              </span>
+            </p>
+
+            {property?.ownership === "own" ? (
+              <span className="inline-flex items-center rounded-md bg-[#DCFCE7] px-3 py-1 text-xs font-bold whitespace-nowrap text-[#15803D]">
+                Owner Listed
+              </span>
+            ) : property?.ownership === "assignable" ? (
+              <span className="inline-flex items-center rounded-md bg-[#DBEAFE] px-3 py-1 text-xs font-bold whitespace-nowrap text-[#1D4ED8]">
+                Contract Assignment
+              </span>
+            ) : null}
+          </div>
 
           {property?.oldListingPrice &&
             property?.oldListingPrice > property?.listingPrice && (
@@ -64,7 +75,7 @@ export function BasicPropertyDetails({ property }: PropertyListingProps) {
                 <span>
                   Price Reduced{" "}
                   <span className="">
-                    ~~ 
+                    ~~
                     {priceFormatter.format(
                       property?.oldListingPrice - property?.listingPrice,
                     )}{" "}

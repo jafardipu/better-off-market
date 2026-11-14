@@ -156,7 +156,12 @@ export default function DashboardPropertyCard({
 
             {/* Right Icons */}
             <div className="ml-auto flex items-center gap-2">
-              <Share title="property" link={`/properties-list/${id}`} />
+              <Share
+                title="Better Off Market listing"
+                link={`/properties-list/${id}`}
+                image={image}
+                listingLabel={location || type}
+              />
               {(status === PROPERTY_STATUS.active ||
                 status === PROPERTY_STATUS.pending ||
                 status === PROPERTY_STATUS.rejected) && (

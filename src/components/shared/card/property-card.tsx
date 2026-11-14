@@ -21,6 +21,7 @@ export function PropertyCard({
   propertyType,
   specifications,
   status,
+  zipCode,
   createdAt,
   propertiesSpecificationsClassName,
   active,
@@ -126,7 +127,7 @@ export function PropertyCard({
 
         {/* Address */}
         <h3 className="xl:text-lg font-semibold text-primary-black line-clamp-1">
-          {streetAddress}, {city}, {state}
+          {streetAddress}, {city}, {state} {zipCode}
         </h3>
 
         {/* Property Details */}

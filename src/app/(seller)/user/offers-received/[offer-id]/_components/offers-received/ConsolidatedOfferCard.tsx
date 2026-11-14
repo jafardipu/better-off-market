@@ -15,7 +15,6 @@ import {
 } from "./utils.offer-received";
 import { SummaryField } from "@/app/(buyer)/review-offer/_components/SummaryField";
 import { ContingencyItem } from "@/app/(buyer)/review-offer/_components/ContingencyItem";
-import { Pill } from "@/app/(buyer)/review-offer/_components/Pill";
 import { DocIcon, DollarIcon, PersonalPropertyIcon } from "@/icons";
 import Link from "next/link";
 
@@ -72,35 +71,20 @@ export function ConsolidatedOfferCard({
               <p className="text-xs font-semibold uppercase tracking-wide text-[#594139]">
                 Included items
               </p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {data.personalProperty.included.length > 0 ? (
-                  data.personalProperty.included.map((item) => (
-                    <Pill key={item}>{item}</Pill>
-                  ))
-                ) : (
-                  <span className="text-sm text-muted-foreground">
-                    None specified
-                  </span>
-                )}
-              </div>
+              <p className="mt-1 whitespace-pre-wrap text-sm text-primary-black md:text-lg">
+                {data.personalProperty.includedText?.trim() ||
+                  data.personalProperty.included?.join(", ") ||
+                  "None specified"}
+              </p>
             </div>
-            {data.personalProperty.itemsToRemove ? (
+            {data.personalProperty.itemsToRemove?.trim() ? (
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[#594139]">
                   Items to be removed
                 </p>
-
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {data?.personalProperty?.itemsToRemove ? (
-                    data?.personalProperty?.itemsToRemove
-                      ?.split(",")
-                      ?.map((item) => <Pill key={item}>{item}</Pill>)
-                  ) : (
-                    <span className="text-sm text-muted-foreground">
-                      None specified
-                    </span>
-                  )}
-                </div>
+                <p className="mt-1 whitespace-pre-wrap text-sm text-primary-black md:text-lg">
+                  {data.personalProperty.itemsToRemove}
+                </p>
               </div>
             ) : null}
           </div>

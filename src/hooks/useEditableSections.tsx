@@ -66,5 +66,24 @@ export function useEditableSections({
     [setValue]
   );
 
-  return { editing, changed, startEdit, cancelEdit };
+  /** Keep current field values and leave edit mode (unlike cancelEdit). */
+  const finishEdit = useCallback((section: SectionKey) => {
+    setEditing((prev) => ({ ...prev, [section]: false }));
+  }, []);
+
+  /** Open a section for editing without overwriting an existing snapshot. */
+  const revealEdit = useCallback(
+    (section: SectionKey) => {
+      if (!snapshots.current[section]) {
+        snapshots.current[section] = pickFields(
+          (currentValues ?? originalValues) as OfferFormValues,
+          SECTION_FIELDS[section],
+        );
+      }
+      setEditing((prev) => ({ ...prev, [section]: true }));
+    },
+    [currentValues, originalValues],
+  );
+
+  return { editing, changed, startEdit, cancelEdit, finishEdit, revealEdit };
 }

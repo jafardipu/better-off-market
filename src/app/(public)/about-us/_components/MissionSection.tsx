@@ -17,7 +17,7 @@ const fadeUp = {
 export default function MissionSection() {
   return (
     <Container className="lg:py-16 py-8 bg-white">
-      <div className="mx-auto grid grid-cols-1 md:grid-cols-2  gap-8 md:gap-12 lg:gap-16 items-start">
+      <div className="mx-auto grid grid-cols-1 md:grid-cols-2  gap-8 md:gap-12 lg:gap-16 items-center">
         {/* Left - Image */}
         <motion.div
           initial={{ opacity: 0, x: -40, scale: 0.96 }}
@@ -60,26 +60,20 @@ export default function MissionSection() {
             className="space-y-4 text-lg text-primary-gray leading-relaxed"
           >
             <p>
-              At BetterOffMarket, our mission is to create a smarter, more accessible way for real estate
-              opportunities to be discovered, shared, and brought to life. We believe there is more to real estate
-              than traditional channels, and that the right connections can open doors to opportunities that
-              might otherwise go undiscovered.
+              At BetterOffMarket, our mission is to make real estate opportunities easier to discover, share, and pursue. We believe the best opportunities aren't always found through traditional channels, and the right connections can make all the difference.
             </p>
             <p>
-              By bringing buyers, sellers, wholesalers, and investors together in one centralized marketplace,
-              we're making it easier to build meaningful connections, explore new possibilities, and move
-              transactions forward. From listing properties and connecting with interested parties to
-              communicating and negotiating, BetterOffMarket brings the process together in one place-
-              making real estate transactions more efficient, seamless, and accessible for everyone involved.
+              By bringing buyers, sellers, wholesalers, and investors together in one centralized marketplace, BetterOffMarket streamlines how people connect, communicate, and negotiate—from discovering properties to exchanging offers.
             </p>
             <p>
-              Whether you're looking to sell a property, find your next, or expand your network,
-              BetterOffMarket is designed to simplify the process and create a better experience from start to
-              finish.
+              We're starting with <span className="font-medium"> 18 counties across Southwest Ohio and Northern Kentucky </span>, with a vision to make off-market real estate more accessible to everyone.
             </p>
           </motion.div>
+          <div className='text-lg font-medium text-black mt-2 text-primary-gray space-y-2'>
 
-          <p className='text-lg font-medium text-black mt-5'>Better Connections. Better Opportunities. BetterOffMarket.</p>
+            <p>If your county is on the map, you're in.</p>
+            <p className="text-black">Better Connections. Better Opportunities. BetterOffMarket.</p>
+          </div>
 
           {/* Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">

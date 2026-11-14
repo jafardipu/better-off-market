@@ -57,6 +57,8 @@ export default function PropertyContainer({
             createdAt={property?.createdAt}
             status={property?.status}
             approvedDate={property?.approvedDate}
+            image={property?.photos?.[0]}
+            listingLabel={`${property?.streetAddress}, ${property?.city}, ${property?.state}`}
           />
           <AuthenticationRequired />
           {hasUpcomingOpenHouse && property.openHouse && (
@@ -65,16 +67,6 @@ export default function PropertyContainer({
               id={property?._id}
               sellerId={property?.seller?._id}
             />
-          )}
-          {!hasUpcomingOpenHouse && (
-            <div className="rounded-md border border-[#FAEEEA] bg-white p-4 shadow-[0_20px_50px_0_rgba(15,23,42,0.10)] lg:p-6">
-              <h2 className="md:text-2xl text-xl font-semibold text-primary-black mb-4">
-                Open House
-              </h2>
-              <p className="text-sm text-gray-600">
-                No upcoming open house is scheduled for this property.
-              </p>
-            </div>
           )}
 
           <ProfileCard seller={property?.seller} />
