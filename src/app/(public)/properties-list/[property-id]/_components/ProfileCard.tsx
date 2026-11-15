@@ -62,7 +62,7 @@ export default function ProfileCard({ seller }: ProfileCardProps) {
       {/* Bottom Section */}
       <div className="mt-4 flex items-center justify-between text-sm">
         <span className="text-gray-600">
-          Member since {moment(seller?.createdAt).format("MMM YYYY")}
+          Member since {moment(seller?.createdAt).format("MM-YYYY")}
         </span>
         <span className={cn("font-semibold text-gray-900")}>
           {isLoading ? (

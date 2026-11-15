@@ -110,11 +110,9 @@ export function getInitials(name: string) {
 
 export function formatDateParts(dateString: string) {
   const date = new Date(dateString);
-  const dateLabel = date.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const dateLabel = `${month}-${day}-${date.getFullYear()}`;
   const timeLabel = date.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",

@@ -113,7 +113,7 @@ export default function ReviewOfferContainer() {
             closingTerms: {
               titleCompany: offerData?.titleCompany ?? "",
               closingDate: moment(offerData?.closingDate).format(
-                "MMM DD, YYYY",
+                "MM-DD-YYYY",
               ),
               possession: offerData?.possession ?? "",
             },

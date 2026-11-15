@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { MapPin } from "lucide-react";
 import Navbar from "../navbar/Navbar";
 import Container from "../container/Container";
 import { cn } from "@/lib/utils";
@@ -130,8 +131,9 @@ export default function HeroBanner({ data }: TProps) {
                   delay: 1.25,
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                className="mt-4 text-sm text-primary-color font-semibold bg-[#D1E5FF] max-w-max px-4 py-1.5 rounded-full"
+                className="mt-4 inline-flex items-center gap-1.5 text-sm text-primary-color font-semibold bg-[#D1E5FF] max-w-max px-4 py-1.5 rounded-full"
               >
+                <MapPin className="size-3.5 shrink-0" aria-hidden />
                 {data.regionBadge}
               </motion.h6>
             ) : null}

@@ -19,7 +19,7 @@ export function OpenHouse({ openHouse, id, sellerId }: OpenHouseProps) {
         <div className="mb-4 flex gap-4 items-center justify-between">
           <span className="text-gray-300">Date</span>
           <span className="  text-white">
-            {moment(openHouse?.date).format("DD-MMM-YYYY")}
+            {moment(openHouse?.date).format("MM-DD-YYYY")}
           </span>
         </div>
 

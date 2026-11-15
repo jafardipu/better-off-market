@@ -77,7 +77,7 @@ export default function NotificationsPanel({
                     </p>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {moment(notification?.createdAt).format("llll")}
+                    {moment(notification?.createdAt).format("MM-DD-YYYY h:mm A")}
                   </TooltipContent>
                 </Tooltip>
               </div>

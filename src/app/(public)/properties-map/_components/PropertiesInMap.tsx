@@ -157,8 +157,8 @@ export function PropertiesInMap({
               options={{
                 disableDefaultUI: true,
                 zoomControl: true,
-                scrollwheel: false,
-                gestureHandling: "cooperative",
+                scrollwheel: true,
+                gestureHandling: "greedy",
               }}
             >
               {properties.map((property) => (

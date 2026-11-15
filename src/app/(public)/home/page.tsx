@@ -21,7 +21,7 @@ export default function Home() {
       "Where property owners, wholesalers, investors, and buyers connect to discover opportunities, negotiate, and sell directly.",
     children: <LocationSearch />,
     titleClassName: "2xl:text-6xl lg:text-5xl md:text-4xl text-3xl font-semibold max-w-2xl",
-    regionBadge: "CINCINNATI + NORTHERN KY",
+    regionBadge: "CINCINNATI + NORTHERN KENTUCKY",
     // className: "min-h-[90vh]",
   };
   return (

@@ -1,6 +1,9 @@
 import { PropertySpecificationsIcon } from "@/icons";
 import { HomeIcon, ClosingPreferencesIcon, MajorComponentsIcon } from "@/icons";
 import { IPropertyResponse } from "@/types";
+import { ClipboardList } from "lucide-react";
+import ReadMoreText from "@/components/shared/utils/ReadMoreText";
+import { formatDateUS } from "@/utils/formatDateUS";
 
 interface SpecItem {
   label: string;
@@ -107,7 +110,12 @@ export function PropertyInfo({ property }: PropertyInfoProps) {
 
   const closingPreferences = [
     { label: "Title Company", value: property?.titleCompany },
-    { label: "Closing Date", value: property?.closingDate },
+    {
+      label: "Closing Date",
+      value: property?.closingDate
+        ? formatDateUS(property.closingDate)
+        : undefined,
+    },
   ].filter((c) => Boolean(c.value));
 
   return (
@@ -140,45 +148,49 @@ export function PropertyInfo({ property }: PropertyInfoProps) {
               )}
             </div>
           ))}
-          {property?.otherUpdates && (
-            <div>
-              <div className="h-px bg-[#DEDEDE]"></div>
-              <div className="mt-1">
-                <span className="text-sm text-[#594139]">
-                  {" "}
-                  Other Ages/Updates{" "}
-                </span>
-                <span className="text-xs ml-1">{property?.otherUpdates} </span>
-              </div>
-            </div>
-          )}
         </InfoCard>
       </div>
+
+      {property?.otherUpdates ? (
+        <InfoCard
+          icon={<ClipboardList className="size-5 text-[#1F4E8B]" />}
+          title="Other Ages/Updates"
+        >
+          <div className="text-base text-primary-black leading-relaxed">
+            <ReadMoreText text={property.otherUpdates} wordLimit={120} />
+          </div>
+        </InfoCard>
+      ) : null}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <InfoCard
           icon={<HomeIcon className="size-5 text-[#1F4E8B]" />}
           title="HOA Details"
         >
-          {property?.hasHoa === "no" ? (
-            <h5 className="mt-5 text-center">
-              No HOA affiliated with this property.
-            </h5>
-          ) : (
+          {property?.hasHoa === "yes" ? (
             <>
               <SpecRow
-                label={`${property?.hoaFrequency} Fee`}
+                label={`${property?.hoaFrequency || "HOA"} Fee`}
                 value={property?.hoaAmount ? `$${property?.hoaAmount}` : "N/A"}
               />
-              <div className="h-px bg-[#DEDEDE]"></div>
-              <div className="pt-2">
-                {/* <span className="text-sm text-[#594139]">Amenities</span> */}
-                <p className="mt-1 text-sm ">
-                  <span className="text-[#594139]">Includes: </span>{" "}
-                  <span className="text-xs"> {property?.hoaIncludes}</span>
-                </p>
-              </div>
+              {property?.hoaIncludes ? (
+                <>
+                  <div className="h-px bg-[#DEDEDE]"></div>
+                  <div className="pt-2">
+                    <p className="mt-1 text-sm">
+                      <span className="text-[#594139]">Includes: </span>{" "}
+                      <span className="text-xs whitespace-pre-wrap">
+                        {property.hoaIncludes}
+                      </span>
+                    </p>
+                  </div>
+                </>
+              ) : null}
             </>
+          ) : (
+            <h5 className="mt-5 text-center text-primary-gray">
+              No HOA affiliated with this property.
+            </h5>
           )}
         </InfoCard>
 

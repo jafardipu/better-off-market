@@ -158,7 +158,7 @@ export function PropertyListingForm({
             ) : isEditMode ? (
               "Update Changes"
             ) : (
-              "Publish Listing Now"
+              "Publish Listing"
             )}
           </Button>
         </div>

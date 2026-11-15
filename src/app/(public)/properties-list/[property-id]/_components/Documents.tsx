@@ -38,7 +38,7 @@ export function Documents({
               </h3>
               {/* <p className="text-xs text-gray-500 mt-1">
                 {doc.size} • Updated{" "}
-                {moment(doc.updated).format("MMM DD, YYYY")}
+                {moment(doc.updated).format("MM-DD-YYYY")}
               </p> */}
             </div>
             <button

@@ -151,17 +151,8 @@ export function splitToList(value?: string | null) {
     .filter(Boolean);
 }
 
-// "2010-04-25" -> "April 25, 2010" ; non-date strings like "ASAP" pass through unchanged
-export function formatDate(dateString?: string | null) {
-  if (!dateString) return "—";
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return dateString;
-  return date.toLocaleDateString("en-US", {
-    month: "long",
-    day: "2-digit",
-    year: "numeric",
-  });
-}
+// "2010-04-25" -> "04-25-2010" ; non-date strings like "ASAP" pass through unchanged
+export { formatDateUS as formatDate } from "@/utils/formatDateUS";
 
 // "Ori Mccullough" -> "Ori M."
 

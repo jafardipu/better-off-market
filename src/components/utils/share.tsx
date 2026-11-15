@@ -110,8 +110,23 @@ export default function Share({
 
   const openShareWindow = (url: string, label: string) => {
     try {
-      const popup = window.open(url, "_blank", "noopener,noreferrer");
-      if (!popup) window.location.href = url;
+      // Do not pass "noopener" as a window feature — many browsers then return
+      // null even when the tab opened, and our old fallback navigated this page.
+      const popup = window.open(url, "_blank");
+      if (popup) {
+        popup.opener = null;
+        return;
+      }
+
+      // Popup blocked: open via a temporary link so this tab stays put.
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.target = "_blank";
+      anchor.rel = "noopener noreferrer";
+      anchor.style.display = "none";
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
     } catch (error) {
       console.error(`${label} share failed:`, error);
       toast.error(`Could not open ${label}. Please try another option.`);

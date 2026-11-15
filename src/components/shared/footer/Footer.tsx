@@ -22,7 +22,8 @@ export default function Footer() {
                   className="max-w-29.75 object-cover"
                 />
                 <p className="text-primary-gray mt-4 transition-colors sm:text-base text-sm">
-                  The leading direct-to-buyer investment property marketplace.
+                  Streamlining the way buyers and sellers connect, communicate,
+                  and negotiate off-market.
                 </p>
               </div>
             </div>

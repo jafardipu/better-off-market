@@ -50,7 +50,7 @@ export function SellerReviewList({
                   {review.user?.name ?? "Anonymous"}
                 </p>
                 <p className="text-sm text-[#594139] font-semibold">
-                  {moment(review.createdAt).format("MMM DD, YYYY")}
+                  {moment(review.createdAt).format("MM-DD-YYYY")}
                 </p>
               </div>
             </div>

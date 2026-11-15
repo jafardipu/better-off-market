@@ -6,6 +6,7 @@ import { EditableSelectField } from "../ui/EditableSelectField";
 import { POSSESSION_OPTIONS, type OfferFormValues } from "@/lib/validations/offer-form";
 import { SummaryField } from "@/app/(buyer)/review-offer/_components/SummaryField";
 import { formatOrDash } from "../counter-offer-helpers";
+import { formatDateUS } from "@/utils/formatDateUS";
 
 interface ClosingTermsEditableProps {
   originalValues: OfferFormValues;
@@ -43,7 +44,10 @@ export function ClosingTermsEditable({
       viewContent={
         <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
           <SummaryField label="Title company" value={formatOrDash(values.titleCompany)} />
-          <SummaryField label="Closing date" value={formatOrDash(values.closingDate)} />
+          <SummaryField
+            label="Closing date"
+            value={formatDateUS(values.closingDate)}
+          />
           <SummaryField label="Possession" value={possessionLabel} />
         </div>
       }
@@ -60,7 +64,7 @@ export function ClosingTermsEditable({
             name="closingDate"
             label="Closing date"
             type="date"
-            originalValue={formatOrDash(originalValues.closingDate)}
+            originalValue={formatDateUS(originalValues.closingDate)}
           />
           <EditableSelectField
             control={control}

@@ -101,7 +101,7 @@ export function SavePropertyCard({
       <div className="xl:p-6  p-4 space-y-1">
         {/* Date */}
         <p className="text-sm font-medium text-primary-color line-clamp-1">
-          Saved on {moment(saveDate).format("MMM DD, YYYY")}
+          Saved on {moment(saveDate).format("MM-DD-YYYY")}
         </p>
 
         {/* Price */}

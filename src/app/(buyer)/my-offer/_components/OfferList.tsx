@@ -115,7 +115,7 @@ export default function OfferList({
                     </p>
                     <p className="text-gray-700 text-[16px]">
                       {moment(offer.currentTerms?.createdAt).format(
-                        "MMM DD, YYYY",
+                        "MM-DD-YYYY",
                       )}
                     </p>
                   </div>
