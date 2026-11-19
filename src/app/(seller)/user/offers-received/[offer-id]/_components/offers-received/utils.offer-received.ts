@@ -1,3 +1,7 @@
+import { formatDateUS as formatDate } from "@/utils/formatDateUS";
+
+export { formatDate };
+
 export interface ConsolidatedOfferDocument {
   name: string;
   url: string;
@@ -150,9 +154,6 @@ export function splitToList(value?: string | null) {
     .map((v) => v.trim())
     .filter(Boolean);
 }
-
-// "2010-04-25" -> "04-25-2010" ; non-date strings like "ASAP" pass through unchanged
-export { formatDateUS as formatDate } from "@/utils/formatDateUS";
 
 // "Ori Mccullough" -> "Ori M."
 

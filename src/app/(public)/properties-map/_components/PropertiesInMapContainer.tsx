@@ -6,7 +6,6 @@ import FilterOptions from "@/components/shared/utils/FilterOptions";
 import PropertiesList from "./PropertiesList";
 import { useGetPropertiesForWebQuery } from "@/redux/api/propertiesApi";
 import MapListingsSkeleton from "@/components/skeleton/MapListingsSkeleton";
-import { useGeolocationParams } from "@/hooks/useGeolocationParams";
 
 export type SearchParams = {
   [key: string]: string | string[] | number | undefined;
@@ -18,7 +17,6 @@ export default function PropertiesInMapContainer({
   searchParams: SearchParams;
 }) {
   const [selectedProperty, setSelectedProperty] = useState<any>();
-  useGeolocationParams();
   const { data, isLoading } = useGetPropertiesForWebQuery({
     ...searchParams,
     limit: 1000,

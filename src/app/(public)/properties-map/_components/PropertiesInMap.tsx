@@ -12,8 +12,8 @@ const containerStyle = {
   height: "100%",
 };
 
-// Default fallback center — Dhaka, Bangladesh
-const DHAKA_CENTER = { lat: 23.8103, lng: 90.4125 };
+// Default fallback center — Cincinnati, OH
+const DEFAULT_CENTER = { lat: 39.103119, lng: -84.512016 };
 
 interface LocationMapProps {
   properties: IPropertyResponse[];
@@ -37,7 +37,7 @@ function formatPrice(price: number): string {
 }
 
 function getCenter(properties: IPropertyResponse[]) {
-  if (!properties.length) return DHAKA_CENTER;
+  if (!properties.length) return DEFAULT_CENTER;
   const lats = properties.map((p) => p.location.coordinates[1]);
   const lngs = properties.map((p) => p.location.coordinates[0]);
   return {
@@ -58,57 +58,26 @@ export function PropertiesInMap({
   const [internalActiveId, setInternalActiveId] = useState<
     IPropertyResponse["_id"] | null
   >(null);
-  const [browserCenter, setBrowserCenter] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
-
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const activeId = activeIdProp ?? internalActiveId;
 
-  const explicitCenter = useMemo(() => {
-    const latParam = Number(searchParams.get("lat"));
-    const lngParam = Number(searchParams.get("lng"));
+  const center = useMemo(() => {
+    const latStr = searchParams.get("lat");
+    const lngStr = searchParams.get("lng");
 
-    if (Number.isFinite(latParam) && Number.isFinite(lngParam)) {
-      return { lat: latParam, lng: lngParam };
+    if (latStr && lngStr) {
+      const latParam = Number(latStr);
+      const lngParam = Number(lngStr);
+
+      if (Number.isFinite(latParam) && Number.isFinite(lngParam)) {
+        return { lat: latParam, lng: lngParam };
+      }
     }
-    return null;
+    return DEFAULT_CENTER;
   }, [searchParams]);
-
-  useEffect(() => {
-    if (explicitCenter) {
-      setBrowserCenter(null);
-      return;
-    }
-
-    if (typeof window === "undefined" || !("geolocation" in navigator)) {
-      setBrowserCenter(null);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setBrowserCenter({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
-      },
-      () => {
-        setBrowserCenter(null);
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 10000,
-        maximumAge: 5 * 60 * 1000,
-      },
-    );
-  }, [explicitCenter]);
-
-  const center = explicitCenter ?? browserCenter ?? DHAKA_CENTER;
 
   const onLoad = useCallback(
     (mapInstance: google.maps.Map) => {

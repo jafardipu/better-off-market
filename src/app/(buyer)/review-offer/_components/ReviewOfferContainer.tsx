@@ -44,7 +44,14 @@ export default function ReviewOfferContainer() {
   const offerData = draft?.values;
 
   const handleSubmitOffer = async () => {
-    const formattedData = { property: draft?.propertyId, terms: draft?.values };
+    if (!draft?.propertyId || !draft?.values) {
+      toast.error(
+        "This offer is missing the listing. Go back and submit the offer from the listing page again.",
+      );
+      return;
+    }
+
+    const formattedData = { property: draft.propertyId, terms: draft.values };
     try {
       const formData = new FormData();
       if (draft?.supportingDocuments?.length) {
