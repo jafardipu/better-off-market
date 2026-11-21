@@ -59,6 +59,13 @@ export default function PropertyContainer({
             approvedDate={property?.approvedDate}
             image={property?.photos?.[0]}
             listingLabel={`${property?.streetAddress}, ${property?.city}, ${property?.state}`}
+            propertyAddress={[
+              property?.streetAddress,
+              property?.city,
+              [property?.state, property?.zipCode].filter(Boolean).join(" "),
+            ]
+              .filter(Boolean)
+              .join(", ")}
           />
           <AuthenticationRequired />
           {hasUpcomingOpenHouse && property.openHouse && (

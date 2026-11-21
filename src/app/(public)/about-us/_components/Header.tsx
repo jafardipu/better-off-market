@@ -26,7 +26,7 @@ export default function Header() {
           variants={fadeUp as any}
           className="text-sm text-primary-color font-semibold bg-[#D1E5FF] max-w-max px-4 py-1.5 rounded-full"
         >
-          OFF-MARKET PROPERTY · CINCINNATI + NORTHERN KY
+          OFF-MARKET PROPERTY · CINCINNATI + NORTHERN KENTUCKY
         </motion.h6>
 
         <motion.h3

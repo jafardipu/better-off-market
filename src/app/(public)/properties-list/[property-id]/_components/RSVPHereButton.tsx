@@ -3,8 +3,10 @@
 import { AppDialog } from "@/components/shared/dialog/AppDialog";
 import { errorModification } from "@/lib/errors/errorModification";
 import { cn } from "@/lib/utils";
-import { useIncreaseRSVPCountMutation } from "@/redux/api/propertiesApi";
+import { useGetMyRsvpsQuery, useIncreaseRSVPCountMutation } from "@/redux/api/propertiesApi";
 import { useAppSelector } from "@/redux/hooks";
+import { IOpenHouseRsvp } from "@/types";
+import { IApiResponse } from "@/types/api-response";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -20,8 +22,18 @@ export default function RSVPHereButton({
   const [openRSVP, setOpenRSVP] = useState(false);
   const [openAuthModel, setOpenAuthModel] = useState(false);
   const [createRSVP, { isLoading }] = useIncreaseRSVPCountMutation();
+  const [justSent, setJustSent] = useState(false);
   const router = useRouter();
   const pathName = usePathname();
+  const isOwnListing = Boolean(user?.userId && user.userId === sellerId);
+  const { data: sentRsvps } = useGetMyRsvpsQuery("buyer", {
+    skip: !user?.userId || isOwnListing,
+  });
+  const alreadyInterested =
+    justSent ||
+    ((sentRsvps as IApiResponse<IOpenHouseRsvp[]> | undefined)?.data ?? []).some(
+      (rsvp) => rsvp.property?._id === id,
+    );
 
   const handleRSVP = async () => {
     try {
@@ -31,6 +43,7 @@ export default function RSVPHereButton({
       }
       if (isLoading) return;
       await createRSVP(id).unwrap();
+      setJustSent(true);
       toast.success("You have RSVP successfully confirmed!");
       setOpenRSVP(false);
     } catch (error) {
@@ -43,13 +56,20 @@ export default function RSVPHereButton({
       <button
         className={cn(
           "w-full rounded-md bg-white py-3 text-base text-primary-blue transition-opacity hover:opacity-90 cursor-pointer text-primary-color font-semibold",
-          user?.userId === sellerId &&
+          (isOwnListing || alreadyInterested) &&
             "disabled:cursor-not-allowed disabled:opacity-80",
         )}
-        onClick={() => setOpenRSVP(true)}
-        disabled={user?.userId === sellerId}
+        onClick={() => {
+          if (alreadyInterested) return;
+          if (!user?.userId) {
+            setOpenAuthModel(true);
+            return;
+          }
+          setOpenRSVP(true);
+        }}
+        disabled={isOwnListing || alreadyInterested}
       >
-        RSVP Here
+        {alreadyInterested ? "Already interested" : "RSVP Here"}
       </button>
       <AppDialog
         open={openRSVP}
@@ -73,7 +93,7 @@ export default function RSVPHereButton({
         open={openAuthModel}
         onOpenChange={setOpenAuthModel}
         title="Sign in to continue"
-        description="Login your account to report seller"
+        description="Log in to your account to RSVP for the open house"
         actions={[
           {
             label: "Cancel",

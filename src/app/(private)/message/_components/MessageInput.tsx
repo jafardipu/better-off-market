@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, KeyboardEvent } from "react";
 import { Plus, Send, X, Paperclip, SmilePlus } from "lucide-react";
+import type { MessagePropertyInfo } from "./types";
+import PropertyReference from "./PropertyReference";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { useOnClickOutside } from "usehooks-ts";
 import { cn } from "@/lib/utils";
@@ -10,6 +12,8 @@ type Props = {
   onSend: (content: string, files?: File[]) => void;
   onTyping?: () => void;
   disabled?: boolean;
+  propertyInfo?: MessagePropertyInfo | null;
+  onClearProperty?: () => void;
 };
 
 type Attachment = {
@@ -17,7 +21,13 @@ type Attachment = {
   previewUrl: string | null; // object URL for images, null for other file types
 };
 
-export default function MessageInput({ onSend, onTyping, disabled }: Props) {
+export default function MessageInput({
+  onSend,
+  onTyping,
+  disabled,
+  propertyInfo,
+  onClearProperty,
+}: Props) {
   const [value, setValue] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -93,6 +103,25 @@ export default function MessageInput({ onSend, onTyping, disabled }: Props) {
 
   return (
     <div className="border-t border-primary-border-color">
+      {propertyInfo?.address ? (
+        <div className="px-4 pt-3 sm:px-5">
+          <div className="flex items-center gap-2 rounded-xl border border-[#E2E8F0] bg-[#F4F7FB] px-2 py-2">
+            <span className="min-w-0 flex-1">
+              <PropertyReference property={propertyInfo} />
+            </span>
+            {onClearProperty ? (
+              <button
+                type="button"
+                onClick={onClearProperty}
+                aria-label="Remove property reference"
+                className="size-5 shrink-0 rounded-full text-slate-500 hover:bg-slate-200"
+              >
+                <X className="size-3.5" />
+              </button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
       {attachments.length > 0 && (
         <div className="flex flex-wrap gap-2 px-4 pt-3 sm:px-5">
           {attachments.map((a, i) =>

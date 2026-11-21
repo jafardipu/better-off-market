@@ -73,11 +73,14 @@ export function PropertySpecificationsSection() {
                   label={field.label}
                   type={field.type === "number" ? "number" : "text"}
                   step={
-                    field.type === "number"
+                    field.type === "number" && !field.maxDigits
                       ? (field.step ?? 0.01)
                       : undefined
                   }
                   min={field.min}
+                  maxDigits={field.maxDigits}
+                  wholeNumbersOnly={Boolean(field.maxDigits)}
+                  maxLength={field.maxDigits}
                   placeholder={field.placeholder}
                   registration={register(fieldPath)}
                   extraClassName={field.className}

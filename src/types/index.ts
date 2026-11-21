@@ -85,6 +85,28 @@ export interface IOpenHouse {
   endTime?: string;
 }
 
+export interface IOpenHouseRsvpBuyer {
+  _id: string;
+  name: string;
+  profile?: string | null;
+}
+
+export interface IOpenHouseRsvp {
+  _id: string;
+  createdAt: string;
+  buyer?: IOpenHouseRsvpBuyer;
+  seller?: IOpenHouseRsvpBuyer;
+  property?: {
+    _id: string;
+    streetAddress?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    photos?: string[];
+    openHouse?: IOpenHouse;
+  };
+}
+
 // ================================================= backend response =================================================
 
 export type TPropertyStatus =

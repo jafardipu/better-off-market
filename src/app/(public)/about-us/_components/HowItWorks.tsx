@@ -40,7 +40,7 @@ export default function HowItWorks() {
             How it works
           </h2>
           <p className="mt-4 text-base text-[#E0E3E5B2]/70 max-w-2xl mx-auto leading-relaxed sm:mt-6 sm:text-lg">
-          A streamlined approach to off-market real estate-bringing discovery, communication, and
+          A streamlined approach to off-market real estate—bringing discovery, communication, and
           negotiation together in one seamless platform.
           </p>
         </motion.div>

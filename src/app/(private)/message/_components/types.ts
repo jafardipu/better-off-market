@@ -24,12 +24,19 @@ export type ChatListItem = {
   unreadMessageCount?: number;
 };
 
+export type MessagePropertyInfo = {
+  _id: string;
+  address: string;
+  image?: string;
+};
+
 export type ChatMessage = {
   _id: string;
   sender: string;
   receiver?: string;
   text: string;
   imageUrl?: string[];
+  propertyInfo?: MessagePropertyInfo | null;
   createdAt: string;
   updatedAt?: string;
   seen?: boolean;

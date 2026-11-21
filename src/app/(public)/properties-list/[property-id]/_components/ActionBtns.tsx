@@ -19,6 +19,7 @@ export function ActionBtns({
   approvedDate,
   image,
   listingLabel,
+  propertyAddress,
 }: {
   id: string;
   totalViews: number;
@@ -28,6 +29,7 @@ export function ActionBtns({
   approvedDate?: string;
   image?: string;
   listingLabel?: string;
+  propertyAddress?: string;
 }) {
   const pathName = usePathname();
   const user: any = useAppSelector((state) => state.auth.user);
@@ -51,7 +53,15 @@ export function ActionBtns({
       </Link>
 
       {/* Message seller button */}
-      <Link href={`/message?user=${seller?._id}`} className="block">
+      <Link
+        href={`/message?${new URLSearchParams({
+          user: seller?._id ?? "",
+          ...(id ? { property: id } : {}),
+          ...(propertyAddress ? { address: propertyAddress } : {}),
+          ...(image ? { image } : {}),
+        }).toString()}`}
+        className="block"
+      >
         <button className="w-full cursor-pointer bg-[#2D3133] hover:bg-gray-900 text-white font-semibold py-3 px-4 rounded-lg transition-colors">
           Message seller
         </button>

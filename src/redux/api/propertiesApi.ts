@@ -84,7 +84,22 @@ const propertyApi = baseApi.injectEndpoints({
         url: `/properties/increase-rsvp/${id}`,
         method: "PATCH",
       }),
-      invalidatesTags: [tagTypes.property],
+      invalidatesTags: [tagTypes.property, tagTypes.rsvp],
+    }),
+    getPropertyRsvps: build.query({
+      query: (id: string) => ({
+        url: `/properties/${id}/rsvps`,
+        method: "GET",
+      }),
+      providesTags: [tagTypes.rsvp],
+    }),
+    getMyRsvps: build.query({
+      query: (role: "seller" | "buyer" = "seller") => ({
+        url: "/properties/my-rsvps",
+        method: "GET",
+        params: { role },
+      }),
+      providesTags: [tagTypes.rsvp],
     }),
     deleteProperty: build.mutation({
       query: (id) => ({
@@ -109,4 +124,6 @@ export const {
   useDeletePropertyMutation,
   useIncreaseViewCountMutation,
   useIncreaseRSVPCountMutation,
+  useGetPropertyRsvpsQuery,
+  useGetMyRsvpsQuery,
 } = propertyApi;

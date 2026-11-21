@@ -165,8 +165,9 @@ export default function PropertyListingContainer() {
       if (propertyId && data?.data) {
         await updateProperty({ id: propertyId, formData }).unwrap();
         toast.success("Property updated successfully.");
-        await revalidateProperties();
+        await revalidateProperties(propertyId);
         router.push(`/user/my-listings/${propertyId}`);
+        router.refresh();
         return true;
       }
 

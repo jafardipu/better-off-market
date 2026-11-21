@@ -12,6 +12,7 @@ interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   tooltip?: ReactNode;
   extraClassName?: string;
   wholeNumbersOnly?: boolean; // blocks decimals, letters, e/+/- etc.
+  maxDigits?: number;
   hideNumberSpinner?: boolean;
 }
 
@@ -29,6 +30,7 @@ export function TextField({
   className,
   extraClassName,
   wholeNumbersOnly,
+  maxDigits,
   hideNumberSpinner,
   onKeyDown,
   ...props
@@ -58,13 +60,22 @@ export function TextField({
               // allow copy/paste/select-all
             } else if (!/^[0-9]$/.test(e.key)) {
               e.preventDefault();
+            } else if (maxDigits) {
+              const selected =
+                (e.currentTarget.selectionEnd ?? 0) -
+                (e.currentTarget.selectionStart ?? 0);
+              const digits = e.currentTarget.value.replace(/\D/g, "");
+              if (selected === 0 && digits.length >= maxDigits) {
+                e.preventDefault();
+              }
             }
           }
           onKeyDown?.(e);
         }}
         onChange={(e) => {
-          if (wholeNumbersOnly) {
-            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+          if (wholeNumbersOnly || maxDigits) {
+            const digits = e.target.value.replace(/[^0-9]/g, "");
+            e.target.value = maxDigits ? digits.slice(0, maxDigits) : digits;
           }
           registration?.onChange(e);
           props.onChange?.(e);

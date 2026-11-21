@@ -1,5 +1,6 @@
 import { Boxes, Building, Calendar, Cuboid, LandPlot } from "lucide-react";
 import { AreaIcon, BedIcon, ShawarIcon } from "@/icons";
+import { priceFormatter } from "@/components/shared/utils/priceFormatter";
 
 /** Sum full + half baths for the compact property stats row. */
 function totalBaths(specifications: any) {
@@ -52,7 +53,9 @@ export const handlePropertiesSpecifications = (
         },
         {
           // icon: ShawarIcon,
-          value: `$${specifications?.totalRent}`,
+          value: Number.isFinite(Number(specifications?.totalRent))
+            ? priceFormatter.format(Number(specifications.totalRent))
+            : undefined,
           suffix: "Rent",
           label: "Total Rent",
         },

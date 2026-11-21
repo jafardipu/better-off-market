@@ -13,8 +13,7 @@ import {
   FOUNDATION_OPTIONS,
 } from "../config/property-type.config";
 import type { PropertyListingFormValues } from "@/lib/validations/property-listing.schema";
-import { ToolCaseIcon } from "lucide-react";
-import { MajorComponentsIcon, MajorComponentsIcon2 } from "@/icons";
+import { MajorComponentsIcon2 } from "@/icons";
 
 export function MajorComponentsSection() {
   const {
@@ -39,7 +38,7 @@ export function MajorComponentsSection() {
             label="Age"
             type="number"
             min={0}
-            placeholder="Years"
+            placeholder="Years Old"
             registration={register("roofAge")}
             error={errors.roofAge?.message}
           />
@@ -48,7 +47,7 @@ export function MajorComponentsSection() {
             label="Age"
             type="number"
             min={0}
-            placeholder="Years"
+            placeholder="Years Old"
             registration={register("heatingAge")}
             error={errors.heatingAge?.message}
           />
@@ -60,7 +59,7 @@ export function MajorComponentsSection() {
             label="Age"
             type="number"
             min={0}
-            placeholder="Years"
+            placeholder="Years Old"
             registration={register("coolingAge")}
             error={errors.coolingAge?.message}
           />
@@ -69,7 +68,7 @@ export function MajorComponentsSection() {
             label="Age"
             type="number"
             min={0}
-            placeholder="Years"
+            placeholder="Years Old"
             registration={register("waterHeatingAge")}
             error={errors.waterHeatingAge?.message}
           />

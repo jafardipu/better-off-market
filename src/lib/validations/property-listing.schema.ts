@@ -126,10 +126,22 @@ export const propertyListingSchema = z
     ].flatMap((row) => row.fields);
 
     for (const field of specificationFields) {
-      if (field.type !== "number" || field.step === undefined) continue;
-
       const rawValue = data.specifications[field.name];
       if (rawValue === undefined || rawValue === "") continue;
+
+      if (field.maxDigits) {
+        const raw = String(rawValue).trim();
+        const digitLimit = new RegExp(`^\\d{1,${field.maxDigits}}$`);
+        if (!digitLimit.test(raw)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["specifications", field.name],
+            message: `${field.label} must be a whole number with up to ${field.maxDigits} digits`,
+          });
+        }
+      }
+
+      if (field.type !== "number" || field.step === undefined) continue;
 
       const value = Number(rawValue);
       if (!Number.isFinite(value)) {

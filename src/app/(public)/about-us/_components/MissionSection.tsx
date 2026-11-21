@@ -46,7 +46,7 @@ export default function MissionSection() {
             variants={fadeUp as any}
           >
             <div className="flex items-center gap-2 mb-2">
-              <h2 className="text-[32px] font-bold text-primary-black">Our mission</h2>
+              <h2 className="text-[32px] font-bold text-primary-black">Our Mission</h2>
             </div>
           </motion.div>
 

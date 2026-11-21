@@ -19,14 +19,14 @@ export default async function PropertiesPage({
   const bannerData = {
     title: "Browse properties",
     description:
-      "Browse verified listings — no agents, no middlemen. Professional real estate investment, simplified for the modern investor.",
+      "Browse current listings and explore off-market opportunities.",
     className: "min-h-[50vh]",
   };
 
   const resolvedParams = await searchParams;
 
   return (
-    <div className="space-y-16">
+    <div className="space-y-16" id="properties-list">
       <HeroBanner data={bannerData} />
       <Container className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4  gap-4 ">
         <div>

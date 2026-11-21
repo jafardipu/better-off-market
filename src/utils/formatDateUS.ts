@@ -31,3 +31,19 @@ export function formatDateUS(
   const day = String(value.getDate()).padStart(2, "0");
   return `${month}-${day}-${value.getFullYear()}`;
 }
+
+/** 24-hour "HH:mm" → "h:mm A" (2:00 PM, not 02:00 PM). */
+export function formatTimeUS(value?: string | null, fallback = ""): string {
+  if (value == null || value.trim() === "") return fallback;
+
+  const match = value.trim().match(/^(\d{1,2}):(\d{2})/);
+  if (!match) return value;
+
+  const hour24 = Number(match[1]);
+  const minute = match[2];
+  if (hour24 > 23 || Number(minute) > 59) return value;
+
+  const period = hour24 >= 12 ? "PM" : "AM";
+  const hour12 = hour24 % 12 || 12;
+  return `${hour12}:${minute} ${period}`;
+}

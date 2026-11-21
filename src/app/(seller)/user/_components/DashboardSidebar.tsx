@@ -10,6 +10,7 @@ import {
   Lock,
   BadgeDollarSign,
   Heart,
+  CalendarCheck,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -58,6 +59,12 @@ export default function DashboardSidebar() {
       label: "Offers Received",
       icon: <Receipt size={22} />,
       href: "/user/offers-received",
+    },
+    {
+      key: "rsvps",
+      label: "Open House RSVPs",
+      icon: <CalendarCheck size={22} />,
+      href: "/user/rsvps",
     },
     {
       key: "analytics",

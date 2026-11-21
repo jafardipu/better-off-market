@@ -93,10 +93,7 @@ export default function RecentOffers() {
                 </td>
                 <td className="px-6 py-4">
                   <Link href={`/user/offers-received/${offer?._id}`}>
-                    <Button
-                      variant="ghost"
-                      className={`text-orange-600 hover:text-orange-700 hover:bg-orange-50 p-0 h-auto font-bold cursor-pointer`}
-                    >
+                    <Button className="cursor-pointer bg-primary-color px-4 text-sm font-semibold text-white hover:bg-primary-color hover:opacity-90">
                       Review
                     </Button>
                   </Link>
@@ -155,10 +152,10 @@ export default function RecentOffers() {
             </div>
 
             <Button
-              variant="ghost"
-              className="w-full text-orange-600 hover:text-orange-700 hover:bg-orange-50 font-bold cursor-pointer"
+              asChild
+              className="w-full cursor-pointer bg-primary-color text-sm font-semibold text-white hover:bg-primary-color hover:opacity-90"
             >
-              Review
+              <Link href={`/user/offers-received/${offer?._id}`}>Review</Link>
             </Button>
           </div>
         ))}

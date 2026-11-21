@@ -17,6 +17,7 @@ import type {
   ChatListItem,
   ChatMessage,
   Conversation,
+  MessagePropertyInfo,
   SelectedUser,
 } from "./types";
 import { initialsFromName } from "./Chatfileutils";
@@ -24,12 +25,23 @@ import { toast } from "sonner";
 import { useGetUserByIdQuery } from "@/redux/api/profileApi";
 import { useFileUploadMutation } from "@/redux/api/uploadApi";
 
+function normalizePropertyInfo(raw: any): MessagePropertyInfo | undefined {
+  const info = raw?.propertyInfo;
+  if (!info?._id || !info?.address) return undefined;
+  return {
+    _id: String(info._id),
+    address: String(info.address),
+    ...(info.image ? { image: String(info.image) } : {}),
+  };
+}
+
 function normalizeMessage(raw: any): ChatMessage {
   return {
     _id: raw._id,
     sender: raw.sender,
     text: raw.text ?? "",
     imageUrl: raw.imageUrl,
+    propertyInfo: normalizePropertyInfo(raw),
     createdAt: raw.createdAt,
     updatedAt: raw.updatedAt,
     seen: raw.seen,
@@ -98,6 +110,9 @@ export default function MessagesContainer() {
       setSelectedUserIdState(id);
 
       const params = new URLSearchParams(searchParams.toString());
+      params.delete("property");
+      params.delete("address");
+      params.delete("image");
       if (id) {
         params.set("user", id);
       } else {
@@ -118,6 +133,27 @@ export default function MessagesContainer() {
     const other = item.chat.participants[0];
     return { ...other, chatId: item.chat._id } as SelectedUser;
   }, [chatList, selectedUserId]);
+
+  const propertyId = searchParams.get("property");
+  const propertyAddress = searchParams.get("address");
+  const propertyImage = searchParams.get("image");
+  const propertyInfo: MessagePropertyInfo | null =
+    propertyId && propertyAddress
+      ? {
+          _id: propertyId,
+          address: propertyAddress,
+          ...(propertyImage ? { image: propertyImage } : {}),
+        }
+      : null;
+
+  const clearPropertyReference = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("property");
+    params.delete("address");
+    params.delete("image");
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }, [router, pathname, searchParams]);
 
   const { data: userRes, isLoading: isUserLoading } = useGetUserByIdQuery(
     selectedUserId,
@@ -225,7 +261,21 @@ export default function MessagesContainer() {
           pendingSendsRef.current.length > 0
         ) {
           const tempId = pendingSendsRef.current.shift()!;
-          return prev.map((m) => (m._id === tempId ? normalized : m));
+          return prev.map((m) =>
+            m._id === tempId
+              ? {
+                  ...normalized,
+                  propertyInfo: normalized.propertyInfo
+                    ? {
+                        ...m.propertyInfo,
+                        ...normalized.propertyInfo,
+                        image:
+                          normalized.propertyInfo.image || m.propertyInfo?.image,
+                      }
+                    : m.propertyInfo,
+                }
+              : m,
+          );
         }
         // Message from the other participant — append if we don't already have it
         const exists = prev.some((m) => m._id === normalized._id);
@@ -305,6 +355,7 @@ export default function MessagesContainer() {
         sender: userId,
         text: payload.text,
         imageUrl: payload.imageUrl,
+        propertyInfo,
         createdAt: new Date().toISOString(),
         _isPending: true,
         _status: "sending",
@@ -317,7 +368,10 @@ export default function MessagesContainer() {
         receiver: selectedUser._id,
         text: payload.text,
         imageUrl: payload.imageUrl,
+        ...(propertyInfo ? { propertyInfo } : {}),
       });
+
+      if (propertyInfo) clearPropertyReference();
 
       setIsMsgSendLoading(false);
     } catch (error: any) {
@@ -395,6 +449,8 @@ export default function MessagesContainer() {
               onSend={handleSend}
               onTyping={handleTyping}
               disabled={isMsgSendLoading}
+              propertyInfo={propertyInfo}
+              onClearProperty={clearPropertyReference}
             />
           </>
         ) : selectedUserId && isUserLoading ? (

@@ -1,7 +1,7 @@
 "use client";
 
 import { GoogleMap, Marker, Autocomplete } from "@react-google-maps/api";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Locate, Search } from "lucide-react";
 import { useGoogleMaps } from "@/hooks/useGoogleMaps";
 
@@ -20,6 +20,10 @@ interface LocationSelectorForListingProps {
   /** undefined until the user has picked a location (required at submit time) */
   value?: ILocation;
   onChange: (location: ILocation) => void;
+  /** Address already entered above the map, shown in the search box. */
+  addressQuery?: string;
+  /** Street, city, and state are filled, so the address can be placed on the map. */
+  addressReady?: boolean;
   error?: string;
   label?: string;
   zoom?: number;
@@ -48,9 +52,20 @@ function getPinIcon(): google.maps.Symbol {
 // defaultCenter prop was passed — adjust to your market.
 const FALLBACK_CENTER = { lat: 23.8103, lng: 90.4125 };
 
+function hasPlacedPin(value?: ILocation) {
+  const [lng, lat] = value?.coordinates ?? [];
+  return (
+    Number.isFinite(lat) &&
+    Number.isFinite(lng) &&
+    !(lat === 0 && lng === 0)
+  );
+}
+
 export function LocationSelectorForListing({
   value,
   onChange,
+  addressQuery = "",
+  addressReady = false,
   error,
   zoom = 15,
   defaultCenter,
@@ -63,6 +78,62 @@ export function LocationSelectorForListing({
     useState<google.maps.places.Autocomplete | null>(null);
   const [searchValue, setSearchValue] = useState("");
   const [locating, setLocating] = useState(false);
+  const onChangeRef = useRef(onChange);
+  const geocodeRequest = useRef(0);
+  const lastGeocoded = useRef("");
+  const savedAddress = useRef("");
+  const keepSavedPin = useRef(false);
+  const capturedSavedPin = useRef(false);
+  const previousQuery = useRef<string | null>(null);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  // Keep the search box in sync with the address entered above the map.
+  // A listing that already has a pin keeps that pin until the address changes.
+  useEffect(() => {
+    const query = addressQuery.trim();
+    if (previousQuery.current !== query) {
+      previousQuery.current = query;
+      setSearchValue(query);
+    }
+
+    if (
+      query &&
+      !capturedSavedPin.current &&
+      !lastGeocoded.current &&
+      hasPlacedPin(value)
+    ) {
+      capturedSavedPin.current = true;
+      keepSavedPin.current = true;
+      savedAddress.current = query;
+    }
+
+    const isOriginalSavedAddress =
+      keepSavedPin.current && query === savedAddress.current;
+    if (!query || isOriginalSavedAddress || !isLoaded || !addressReady) return;
+    if (query === lastGeocoded.current) return;
+
+    const requestId = ++geocodeRequest.current;
+    const timer = window.setTimeout(() => {
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: query, region: "us" }, (results, status) => {
+        if (requestId !== geocodeRequest.current) return;
+        const loc = results?.[0]?.geometry?.location;
+        if (status !== "OK" || !loc) return;
+
+        const lat = loc.lat();
+        const lng = loc.lng();
+        lastGeocoded.current = query;
+        onChangeRef.current({ type: "Point", coordinates: [lng, lat] });
+        map?.panTo({ lat, lng });
+        map?.setZoom(16);
+      });
+    }, 500);
+
+    return () => window.clearTimeout(timer);
+  }, [addressQuery, addressReady, isLoaded, map, value]);
 
   // Browser's current position, used as the map center before the user
   // has picked anything. null while we're still asking / haven't asked yet.

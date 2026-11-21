@@ -24,14 +24,17 @@ export default function NavButton({
   const [isUnread, setIsUnread] = useState(false);
   const { data: notificationData } = useGetNotificationQuery(undefined, {
     skip: !user,
+    pollingInterval: user ? 15000 : 0,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
   });
 
   useEffect(() => {
     if (notificationData) {
       const isUnreadNotification = notificationData?.data?.some(
-        (notification: INotification) => notification.read === false,
+        (notification: INotification) => notification.read !== true,
       );
-      setIsUnread(isUnreadNotification);
+      setIsUnread(Boolean(isUnreadNotification));
     }
   }, [notificationData]);
 

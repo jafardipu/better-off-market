@@ -3,6 +3,7 @@ import { HomeIcon, ClosingPreferencesIcon, MajorComponentsIcon } from "@/icons";
 import { IPropertyResponse } from "@/types";
 import { ClipboardList } from "lucide-react";
 import ReadMoreText from "@/components/shared/utils/ReadMoreText";
+import { priceFormatter } from "@/components/shared/utils/priceFormatter";
 import { formatDateUS } from "@/utils/formatDateUS";
 
 interface SpecItem {
@@ -65,34 +66,51 @@ export function PropertyInfo({ property }: PropertyInfoProps) {
     parking: "Other Parking",
   };
 
+  const CURRENCY_SPEC_KEYS = new Set(["totalRent", "avgRentPerUnit"]);
+
+  const formatSpecValue = (key: string, value: unknown) => {
+    if (CURRENCY_SPEC_KEYS.has(key)) {
+      const amount = Number(value);
+      if (Number.isFinite(amount)) return priceFormatter.format(amount);
+    }
+    return String(value);
+  };
+
   const propertySpecsLeft = Object.entries(property?.specifications ?? {})
     .filter(([, value]) => Boolean(value))
     .map(([key, value]) => ({
       label: SPEC_LABEL_OVERRIDES[key] ?? formatCamelCaseToLabel(key),
-      value: String(value),
+      value: formatSpecValue(key, value),
       note: key === "lotSize" ? "Acres" : undefined,
     }));
+
+  const ageNote = (age: unknown) => {
+    if (age === null || age === undefined || age === "") return undefined;
+    const years = Number(age);
+    if (!Number.isFinite(years)) return undefined;
+    return `${years} years old`;
+  };
 
   const components = [
     {
       label: "Roof Material",
       value: property?.roofMaterial,
-      note: `${property?.roofAge} years`,
+      note: ageNote(property?.roofAge),
     },
     {
       label: "Heating System",
       value: property?.heatingSystem,
-      note: `${property?.heatingAge} years`,
+      note: ageNote(property?.heatingAge),
     },
     {
       label: "Cooling",
       value: property?.cooling,
-      note: `${property?.coolingAge} years`,
+      note: ageNote(property?.coolingAge),
     },
     {
       label: "Water Heating",
       value: property?.waterHeating,
-      note: `${property?.waterHeatingAge} years`,
+      note: ageNote(property?.waterHeatingAge),
     },
     {
       label: "Water",

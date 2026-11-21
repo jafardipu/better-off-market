@@ -27,6 +27,7 @@ import { errorModification } from "@/lib/errors/errorModification";
 import { toast } from "sonner";
 import { IOpenHouse } from "@/types";
 import { revalidateProperties } from "@/lib/actions/revalidate";
+import { formatDateUS, formatTimeUS } from "@/utils/formatDateUS";
 
 const scheduleOpenHouseSchema = z
   .object({
@@ -40,6 +41,28 @@ const scheduleOpenHouseSchema = z
   });
 
 type ScheduleOpenHouseValues = z.infer<typeof scheduleOpenHouseSchema>;
+
+const maskedPickerClass =
+  "border-[#F3B896] text-transparent caret-transparent focus-visible:border-[#1F4E8B] focus-visible:ring-[#1F4E8B]/20 py-5 [&::-webkit-datetime-edit]:text-transparent";
+
+function PickerValue({
+  value,
+  placeholder,
+}: {
+  value?: string;
+  placeholder: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "pointer-events-none absolute inset-y-0 left-3 right-8 flex items-center text-sm",
+        value ? "text-primary-black" : "text-primary-gray",
+      )}
+    >
+      {value || placeholder}
+    </span>
+  );
+}
 
 interface ScheduleOpenHouseDialogProps {
   id: string;
@@ -59,11 +82,14 @@ export function ScheduleOpenHouseDialog({
   const form = useForm<ScheduleOpenHouseValues>({
     resolver: zodResolver(scheduleOpenHouseSchema),
     defaultValues: {
-      date: openHouse?.date,
-      startTime: openHouse?.startTime,
-      endTime: openHouse?.endTime,
+      date: openHouse?.date?.slice(0, 10) ?? "",
+      startTime: openHouse?.startTime?.slice(0, 5) ?? "",
+      endTime: openHouse?.endTime?.slice(0, 5) ?? "",
     },
   });
+  const date = form.watch("date");
+  const startTime = form.watch("startTime");
+  const endTime = form.watch("endTime");
 
   const handleSubmit = async (values: ScheduleOpenHouseValues) => {
     try {
@@ -114,7 +140,11 @@ export function ScheduleOpenHouseDialog({
                         <Input
                           {...field}
                           type="date"
-                          className=" border-[#F3B896] focus-visible:ring-[#1F4E8B]/20 focus-visible:border-[#1F4E8B] py-5"
+                          className={maskedPickerClass}
+                        />
+                        <PickerValue
+                          value={field.value ? formatDateUS(field.value) : ""}
+                          placeholder="MM-DD-YYYY"
                         />
                       </div>
                     </FormControl>
@@ -138,7 +168,11 @@ export function ScheduleOpenHouseDialog({
                           <Input
                             {...field}
                             type="time"
-                            className=" border-[#F3B896] focus-visible:ring-[#1F4E8B]/20 focus-visible:border-[#1F4E8B] py-5"
+                            className={maskedPickerClass}
+                          />
+                          <PickerValue
+                            value={formatTimeUS(field.value)}
+                            placeholder="h:mm AM"
                           />
                         </div>
                       </FormControl>
@@ -161,7 +195,11 @@ export function ScheduleOpenHouseDialog({
                           <Input
                             {...field}
                             type="time"
-                            className=" border-[#F3B896] focus-visible:ring-[#1F4E8B]/20 focus-visible:border-[#1F4E8B] py-5"
+                            className={maskedPickerClass}
+                          />
+                          <PickerValue
+                            value={formatTimeUS(field.value)}
+                            placeholder="h:mm AM"
                           />
                         </div>
                       </FormControl>
@@ -170,6 +208,13 @@ export function ScheduleOpenHouseDialog({
                   )}
                 />
               </div>
+
+              {date && startTime && endTime ? (
+                <p className="text-sm font-medium text-primary-black">
+                  {formatDateUS(date)} · {formatTimeUS(startTime)} -{" "}
+                  {formatTimeUS(endTime)}
+                </p>
+              ) : null}
 
               <div className="flex gap-2.5 rounded-lg bg-[#F2F4F6] border border-[#E2E8F0] p-4">
                 <Info className="size-4 text-[#594139] mt-0.5 shrink-0" />

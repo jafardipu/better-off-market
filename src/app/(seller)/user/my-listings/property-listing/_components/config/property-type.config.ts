@@ -23,6 +23,7 @@ export interface SpecField {
   tooltip?: string; // NEW
   step?: number;
   min?: number;
+  maxDigits?: number;
   showSpinner?: boolean;
 }
 
@@ -121,7 +122,7 @@ export const PROPERTY_SPECIFICATIONS_CONFIG: Record<PropertyType, SpecRow[]> = {
           name: "heatPaidBy",
           label: "Heat Paid by",
           type: "select",
-          options: selectOpts(["Owner", "Buyer"]),
+          options: selectOpts(["Owner", "Tenant"]),
         },
       ],
     },
@@ -143,7 +144,7 @@ export const PROPERTY_SPECIFICATIONS_CONFIG: Record<PropertyType, SpecRow[]> = {
           name: "waterPaidBy",
           label: "Water Paid by",
           type: "select",
-          options: selectOpts(["Owner", "Buyer"]),
+          options: selectOpts(["Owner", "Tenant"]),
           className: "col-span-2",
         },
       ],
@@ -185,6 +186,9 @@ export const PROPERTY_SPECIFICATIONS_CONFIG: Record<PropertyType, SpecRow[]> = {
           label: "Year Built",
           type: "number",
           placeholder: "1995",
+          step: 1,
+          min: 0,
+          maxDigits: 4,
         },
       ],
     },
@@ -235,6 +239,9 @@ export const PROPERTY_SPECIFICATIONS_CONFIG: Record<PropertyType, SpecRow[]> = {
           label: "Year Built",
           type: "number",
           placeholder: "1995",
+          step: 1,
+          min: 0,
+          maxDigits: 4,
         },
         {
           name: "parkingSpace",
@@ -292,19 +299,6 @@ export const PROPERTY_SPECIFICATIONS_CONFIG: Record<PropertyType, SpecRow[]> = {
             "Other",
           ]),
           className: "sm:col-span-1 lg:col-span-2",
-        },
-      ],
-    },
-    {
-      fields: [
-        {
-          name: "utilities",
-          label: "Utilities",
-          type: "textarea",
-          rows: 3,
-          placeholder:
-            "Public water, sewer, gas, and electric are located at the street.",
-          className: "sm:col-span-3 lg:col-span-4",
         },
       ],
     },
@@ -379,6 +373,9 @@ export const PROPERTY_SPECIFICATIONS_CONFIG: Record<PropertyType, SpecRow[]> = {
           label: "Year Built",
           type: "number",
           placeholder: "1995",
+          step: 1,
+          min: 0,
+          maxDigits: 4,
         },
       ],
     },

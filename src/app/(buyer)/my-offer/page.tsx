@@ -12,7 +12,7 @@ export default function MyOfferPage() {
   const bannerData = {
     title: "My Offers",
     description:
-      "Submit offers and negotiate with sellers directly - all on one secure platform",
+      "Submit offers and negotiate with sellers directly - all on one secure platform.",
     className: "min-h-[50vh]",
   };
   return (

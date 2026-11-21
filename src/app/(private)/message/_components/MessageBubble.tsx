@@ -1,7 +1,9 @@
 import { CheckCheck } from "lucide-react";
 import { format } from "date-fns";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import AttachmentGrid from "./AttachmentGrid";
+import PropertyReference from "./PropertyReference";
 import type { ChatMessage } from "./types";
 
 type Props = {
@@ -37,6 +39,14 @@ export default function MessageBubble({ message, userId, showTimestamp }: Props)
               message._isPending && "opacity-60",
             )}
           >
+            {message.propertyInfo?.address ? (
+              <Link
+                href={`/properties-list/${message.propertyInfo._id}`}
+                className="mb-2 flex max-w-xs rounded-lg bg-white px-2 py-2"
+              >
+                <PropertyReference property={message.propertyInfo} />
+              </Link>
+            ) : null}
             {message.text}
           </div>
 

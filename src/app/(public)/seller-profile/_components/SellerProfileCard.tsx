@@ -136,7 +136,7 @@ export function SellerProfileCard() {
         open={openAuthModel}
         onOpenChange={setOpenAuthModel}
         title="Sign in to continue"
-        description="Login your account to report seller"
+        description="Log in to your account to report this seller"
         actions={[
           {
             label: "Cancel",
