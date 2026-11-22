@@ -67,13 +67,26 @@ export function PropertyInfo({ property }: PropertyInfoProps) {
   };
 
   const CURRENCY_SPEC_KEYS = new Set(["totalRent", "avgRentPerUnit"]);
+  const UNGROUPED_SPEC_KEYS = new Set(["yearBuilt"]);
+  const numberFormatter = new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 2,
+  });
+
+  const formatGroupedNumber = (value: unknown) => {
+    const raw = String(value ?? "").trim().replace(/[$,]/g, "");
+    if (!/^-?\d+(\.\d+)?$/.test(raw)) return String(value ?? "");
+    const amount = Number(raw);
+    if (!Number.isFinite(amount)) return String(value ?? "");
+    return numberFormatter.format(amount);
+  };
 
   const formatSpecValue = (key: string, value: unknown) => {
     if (CURRENCY_SPEC_KEYS.has(key)) {
-      const amount = Number(value);
+      const amount = Number(String(value).replace(/[$,]/g, ""));
       if (Number.isFinite(amount)) return priceFormatter.format(amount);
     }
-    return String(value);
+    if (UNGROUPED_SPEC_KEYS.has(key)) return String(value);
+    return formatGroupedNumber(value);
   };
 
   const propertySpecsLeft = Object.entries(property?.specifications ?? {})
@@ -189,7 +202,11 @@ export function PropertyInfo({ property }: PropertyInfoProps) {
             <>
               <SpecRow
                 label={`${property?.hoaFrequency || "HOA"} Fee`}
-                value={property?.hoaAmount ? `$${property?.hoaAmount}` : "N/A"}
+                value={
+                  property?.hoaAmount
+                    ? `$${formatGroupedNumber(property.hoaAmount)}`
+                    : "N/A"
+                }
               />
               {property?.hoaIncludes ? (
                 <>

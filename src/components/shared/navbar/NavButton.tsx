@@ -10,6 +10,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useGetNotificationQuery } from "@/redux/api/notificationApi";
 import { INotification } from "@/app/(private)/notifications/_components/NotificationsPanel";
+import { useSocket } from "@/context/SocketContextApi";
+import type { ChatListItem } from "@/app/(private)/message/_components/types";
 
 export default function NavButton({
   setOpen,
@@ -22,6 +24,9 @@ export default function NavButton({
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [isUnread, setIsUnread] = useState(false);
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+  const { socket } = useSocket();
+  const userId = (user as { userId?: string } | null)?.userId;
   const { data: notificationData } = useGetNotificationQuery(undefined, {
     skip: !user,
     pollingInterval: user ? 15000 : 0,
@@ -37,6 +42,43 @@ export default function NavButton({
       setIsUnread(Boolean(isUnreadNotification));
     }
   }, [notificationData]);
+
+  useEffect(() => {
+    if (!socket || !userId) {
+      setHasUnreadMessages(false);
+      return;
+    }
+
+    const requestChatList = () => {
+      socket.emit("my_chat_list", { page: 1, limit: 9999 });
+    };
+
+    const handleChatList = (res: { chats?: ChatListItem[] }) => {
+      const unread = (res?.chats ?? []).some(
+        (item) =>
+          (item.unreadMessageCount ?? 0) > 0 ||
+          (Boolean(item.message) &&
+            item.message?.seen !== true &&
+            item.message?.sender !== userId),
+      );
+      setHasUnreadMessages(unread);
+    };
+
+    socket.on("chat_list", handleChatList);
+    if (socket.connected) requestChatList();
+    socket.on("connect", requestChatList);
+
+    const interval = window.setInterval(requestChatList, 15000);
+    const onFocus = () => requestChatList();
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      socket.off("chat_list", handleChatList);
+      socket.off("connect", requestChatList);
+      window.clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [socket, userId]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -65,8 +107,11 @@ export default function NavButton({
               </div>
             </Link>
             <Link href="/message">
-              <div className="size-10 flex-center bg-[#F6F6F6] hover:bg-[#F6F6F6]/80 hover:scale-105  cursor-pointer rounded-full duration-500">
+              <div className="size-10 flex-center bg-[#F6F6F6] hover:bg-[#F6F6F6]/80 hover:scale-105  cursor-pointer rounded-full duration-500 relative">
                 <MessageIcon />
+                {hasUnreadMessages && (
+                  <div className="absolute top-1 right-1.5 w-3 h-3 bg-red-500 rounded-full"></div>
+                )}
               </div>
             </Link>
             <Link href="/notifications">
@@ -126,8 +171,11 @@ export default function NavButton({
                 </div>
               </Link>
               <Link href="/message">
-                <div className="size-10 flex-center bg-[#F6F6F6] hover:bg-[#F6F6F6]/80 hover:scale-105  cursor-pointer rounded-full duration-500">
+                <div className="size-10 flex-center bg-[#F6F6F6] hover:bg-[#F6F6F6]/80 hover:scale-105  cursor-pointer rounded-full duration-500 relative">
                   <MessageIcon />
+                  {hasUnreadMessages && (
+                    <div className="absolute top-1 right-1.5 w-3 h-3 bg-red-500 rounded-full"></div>
+                  )}
                 </div>
               </Link>
               <Link href="/notifications">

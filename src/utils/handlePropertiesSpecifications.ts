@@ -2,6 +2,10 @@ import { Boxes, Building, Calendar, Cuboid, LandPlot } from "lucide-react";
 import { AreaIcon, BedIcon, ShawarIcon } from "@/icons";
 import { priceFormatter } from "@/components/shared/utils/priceFormatter";
 
+const groupedNumber = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 2,
+});
+
 /** Sum full + half baths for the compact property stats row. */
 function totalBaths(specifications: any) {
   const full = Number(specifications?.fullBaths) || 0;
@@ -10,12 +14,25 @@ function totalBaths(specifications: any) {
   return total > 0 ? total : undefined;
 }
 
+function bathLabel(count: unknown) {
+  return Number(count) === 1 ? "Bath" : "Baths";
+}
+
+function formatSqFt(value: unknown) {
+  const raw = String(value ?? "").trim().replace(/,/g, "");
+  if (!/^-?\d+(\.\d+)?$/.test(raw)) return value;
+  const amount = Number(raw);
+  if (!Number.isFinite(amount)) return value;
+  return groupedNumber.format(amount);
+}
+
 export const handlePropertiesSpecifications = (
   propertyType: string,
   specifications: any,
 ) => {
   switch (propertyType) {
-    case "Residential":
+    case "Residential": {
+      const baths = totalBaths(specifications);
       return [
         {
           icon: BedIcon,
@@ -25,13 +42,13 @@ export const handlePropertiesSpecifications = (
         },
         {
           icon: ShawarIcon,
-          value: totalBaths(specifications),
-          suffix: "Baths",
+          value: baths,
+          suffix: bathLabel(baths),
           label: "Bathrooms",
         },
         {
           icon: AreaIcon,
-          value: specifications?.sqFootage,
+          value: formatSqFt(specifications?.sqFootage),
           suffix: "Sq. Ft",
           label: "Sq. Footage",
         },
@@ -42,6 +59,7 @@ export const handlePropertiesSpecifications = (
           label: "Year Built",
         },
       ];
+    }
 
     case "Multi-Family":
       return [
@@ -89,7 +107,7 @@ export const handlePropertiesSpecifications = (
         },
         {
           icon: AreaIcon,
-          value: specifications?.totalSqFootage,
+          value: formatSqFt(specifications?.totalSqFootage),
           suffix: "Sq.Ft",
           label: "Total Sq.Ft",
         },

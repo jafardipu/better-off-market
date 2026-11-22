@@ -87,8 +87,8 @@ export function PropertyOwnershipSection() {
                     </span>
                   </div>
                   <p className="text-sm text-gray-500">
-                    You have the equitable interest and right to assign the
-                    purchase agreement.
+                  You have a purchase 
+                  agreement that allows you to assign your interest to another buyer.
                   </p>
                 </div>
               </button>
