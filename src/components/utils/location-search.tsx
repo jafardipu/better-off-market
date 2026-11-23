@@ -9,10 +9,9 @@ type LocationSearchProps = {
   placeholder?: string;
 };
 
-type Prediction = {
-  place_id: string;
-  description: string;
-};
+// Kept as the SDK object (not just id + text) so `toPlace()` carries the
+// autocomplete session into the final location lookup.
+type Prediction = google.maps.places.PlacePrediction;
 
 const SEARCH_DEBOUNCE_MS = 300;
 const GOOGLE_MAPS_API_KEY = envConfig.mapKey!;
@@ -68,18 +67,20 @@ export default function LocationSearch({
   const [isOpen, setIsOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [scriptReady, setScriptReady] = useState(false);
-  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
 
-  const autocompleteService = useRef<google.maps.places.AutocompleteService | null>(null);
-  const geocoder = useRef<google.maps.Geocoder | null>(null);
+  const placesLib = useRef<google.maps.PlacesLibrary | null>(null);
+  const sessionToken = useRef<google.maps.places.AutocompleteSessionToken | null>(null);
+  // Incremented per request so a slow, older response can't overwrite newer results.
+  const latestRequest = useRef(0);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadGoogleMapsScript()
-      .then(() => {
-        autocompleteService.current = new google.maps.places.AutocompleteService();
-        geocoder.current = new google.maps.Geocoder();
+      .then(() => google.maps.importLibrary("places") as Promise<google.maps.PlacesLibrary>)
+      .then((lib) => {
+        placesLib.current = lib;
         setScriptReady(true);
       })
       .catch((err) => console.error(err));
@@ -95,33 +96,40 @@ export default function LocationSearch({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const fetchPredictions = useCallback((input: string) => {
-    if (!autocompleteService.current || !input.trim()) {
+  const fetchPredictions = useCallback(async (input: string) => {
+    const places = placesLib.current;
+    const requestId = ++latestRequest.current;
+
+    if (!places || !input.trim()) {
       setPredictions([]);
+      setIsSearching(false);
       return;
     }
 
+    // One token spans every keystroke until a place is picked, so Google
+    // bills the whole search as a single session.
+    sessionToken.current ??= new places.AutocompleteSessionToken();
+
     setIsSearching(true);
-    autocompleteService.current.getPlacePredictions(
-      {
+    try {
+      const { suggestions } = await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
         input,
+        sessionToken: sessionToken.current,
         // Covers city, state, county, ZIP, and full address searches
-        types: ["geocode"],
-      },
-      (results, status) => {
-        setIsSearching(false);
-        if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-          setPredictions(
-            results.map((r) => ({
-              place_id: r.place_id,
-              description: r.description,
-            })),
-          );
-        } else {
-          setPredictions([]);
-        }
-      },
-    );
+        includedPrimaryTypes: ["geocode"],
+      });
+
+      if (requestId === latestRequest.current) {
+        setPredictions(
+          suggestions.flatMap((s) => (s.placePrediction ? [s.placePrediction] : [])),
+        );
+      }
+    } catch (err) {
+      console.error("Place autocomplete failed:", err);
+      if (requestId === latestRequest.current) setPredictions([]);
+    } finally {
+      if (requestId === latestRequest.current) setIsSearching(false);
+    }
   }, []);
 
   function handleInputChange(value: string) {
@@ -138,23 +146,26 @@ export default function LocationSearch({
     setIsOpen(true);
   }
 
-  // Resolves the picked prediction to lat/lng via Geocoding, then
+  // Resolves the picked prediction to lat/lng via Place Details, then
   // redirects to the map page with those coordinates as search params.
-  function handleSelectPrediction(prediction: Prediction) {
-    if (!geocoder.current) return;
+  async function handleSelectPrediction(prediction: Prediction) {
+    setIsLocating(true);
+    try {
+      const place = prediction.toPlace();
+      // The field mask controls billing: request only what the redirect needs.
+      await place.fetchFields({ fields: ["location"] });
 
-    setIsGeocoding(true);
-    geocoder.current.geocode({ placeId: prediction.place_id }, (results, status) => {
-      setIsGeocoding(false);
+      if (!place.location) throw new Error("Selected place has no location");
 
-      if (status === "OK" && results && results[0]) {
-        const { lat, lng } = results[0].geometry.location;
-        setIsOpen(false);
-        router.push(`/properties-map?lat=${lat()}&lng=${lng()}`);
-      } else {
-        console.error("Geocoding failed:", status);
-      }
-    });
+      setIsOpen(false);
+      router.push(`/properties-map?lat=${place.location.lat()}&lng=${place.location.lng()}`);
+    } catch (err) {
+      console.error("Place lookup failed:", err);
+    } finally {
+      // fetchFields ends the session; the next search needs a fresh token.
+      sessionToken.current = null;
+      setIsLocating(false);
+    }
   }
 
   const showList = isOpen && inputValue.trim().length > 0;
@@ -188,9 +199,9 @@ export default function LocationSearch({
       {/* Dropdown */}
       {showList && (
         <div className="absolute left-2 top-[calc(100%+8px)] z-9999 md:max-w-150 max-w-88 min-w-72 overflow-hidden rounded-xl bg-white shadow-xl">
-          {isSearching || isGeocoding ? (
+          {isSearching || isLocating ? (
             <div className="px-4 py-6 text-center text-sm text-gray-500">
-              {isGeocoding ? "Locating..." : "Searching..."}
+              {isLocating ? "Locating..." : "Searching..."}
             </div>
           ) : predictions.length === 0 ? (
             <div className="px-4 py-6 text-center text-sm text-gray-500">
@@ -199,7 +210,7 @@ export default function LocationSearch({
           ) : (
             <ul className="max-h-52 overflow-y-auto py-1">
               {predictions.map((prediction) => (
-                <li key={prediction.place_id}>
+                <li key={prediction.placeId}>
                   <button
                     type="button"
                     onClick={() => handleSelectPrediction(prediction)}
@@ -207,7 +218,7 @@ export default function LocationSearch({
                   >
                     <MapPin className="h-4 w-4 shrink-0 mt-0.5 text-[#A9ACB3]" />
                     <span className="truncate">
-                      {highlightMatch(prediction.description, inputValue)}
+                      {highlightMatch(prediction.text.text, inputValue)}
                     </span>
                   </button>
                 </li>
