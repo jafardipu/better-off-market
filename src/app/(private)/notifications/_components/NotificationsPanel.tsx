@@ -81,7 +81,9 @@ export default function NotificationsPanel({
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <p className="mt-1 text-xs text-primary-gray">
+              {/* pre-line keeps paragraph breaks in long messages (e.g. the
+                  buyer's "You've Reached an Agreement" notification). */}
+              <p className="mt-1 text-xs text-primary-gray whitespace-pre-line">
                 {notification?.description}
               </p>
             </div>

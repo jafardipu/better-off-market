@@ -25,19 +25,35 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { LoaderIcon } from "@/icons";
 import { cn } from "@/lib/utils";
 import { errorModification } from "@/lib/errors/errorModification";
-import { useMarkUnderContractMutation } from "@/redux/api/propertyContractApi";
+import {
+  BUYER_CONTACT_SOURCES,
+  useMarkUnderContractMutation,
+} from "@/redux/api/propertyContractApi";
 import { formatDateUS } from "@/utils/formatDateUS";
 import { TPropertyStatus } from "@/types";
 
-// Every field is optional: the client asked that sellers can submit
-// without filling anything in. Only length limits are enforced.
+const CONTACT_SOURCE_VALUES = BUYER_CONTACT_SOURCES.map((s) => s.value) as [
+  (typeof BUYER_CONTACT_SOURCES)[number]["value"],
+  ...(typeof BUYER_CONTACT_SOURCES)[number]["value"][],
+];
+
+// The three contract details stay optional (client request); only length
+// limits apply. The buyer-contact question and the certification are
+// required: they record whether the Buyer Platform Fee applies (attorney advice).
 const contractDetailsSchema = z.object({
   buyerName: z.string().trim().max(120, "Buyer name is too long"),
   closingDate: z.string(),
   titleCompany: z.string().trim().max(150, "Title company is too long"),
+  buyerContactSource: z.enum(CONTACT_SOURCE_VALUES, {
+    error: "Please select how the buyer first contacted you",
+  }),
+  certified: z
+    .boolean()
+    .refine((value) => value, "Please confirm the certification to continue"),
 });
 
 type ContractDetailsValues = z.infer<typeof contractDetailsSchema>;
@@ -54,6 +70,8 @@ const maskedDateClass = cn(
 
 interface MarkUnderContractDialogProps {
   propertyId: string;
+  /** Links the contract to an accepted offer (opened from the offer page). */
+  offerId?: string;
   currentStatus: TPropertyStatus;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -63,6 +81,7 @@ interface MarkUnderContractDialogProps {
 
 export function MarkUnderContractDialog({
   propertyId,
+  offerId,
   currentStatus,
   open,
   onOpenChange,
@@ -72,7 +91,13 @@ export function MarkUnderContractDialog({
 
   const form = useForm<ContractDetailsValues>({
     resolver: zodResolver(contractDetailsSchema),
-    defaultValues: { buyerName: "", closingDate: "", titleCompany: "" },
+    defaultValues: {
+      buyerName: "",
+      closingDate: "",
+      titleCompany: "",
+      buyerContactSource: undefined,
+      certified: false,
+    },
   });
 
   const handleSubmit = async (values: ContractDetailsValues) => {
@@ -80,9 +105,12 @@ export function MarkUnderContractDialog({
       // Blank fields become undefined so they're left out of the request body.
       await markUnderContract({
         propertyId,
+        offerId,
         buyerName: values.buyerName || undefined,
         closingDate: values.closingDate || undefined,
         titleCompany: values.titleCompany || undefined,
+        buyerContactSource: values.buyerContactSource,
+        certified: true,
       }).unwrap();
 
       toast.success("Your property is now marked Under Contract.");
@@ -199,6 +227,70 @@ export function MarkUnderContractDialog({
                       className={inputClass}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="buyerContactSource"
+              render={({ field }) => (
+                <FormItem className="border-t border-[#F3B896]/60 pt-4">
+                  <FormLabel className="text-sm font-medium text-primary-black leading-snug">
+                    4. How did the buyer first initiate contact with you
+                    regarding this specific property?
+                  </FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      value={field.value ?? ""}
+                      onValueChange={field.onChange}
+                      className="gap-3 mt-1"
+                    >
+                      {BUYER_CONTACT_SOURCES.map((source) => {
+                        const id = `buyer-contact-${source.value}`;
+                        return (
+                          <label
+                            key={source.value}
+                            htmlFor={id}
+                            className="flex cursor-pointer items-start gap-3 text-sm text-primary-black"
+                          >
+                            <RadioGroupItem
+                              id={id}
+                              value={source.value}
+                              className="mt-0.5 border-[#F3B896]"
+                            />
+                            {source.label}
+                          </label>
+                        );
+                      })}
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="certified"
+              render={({ field }) => (
+                <FormItem>
+                  <label className="flex cursor-pointer items-start gap-3 text-sm text-primary-black">
+                    <FormControl>
+                      <input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
+                        className="mt-0.5 size-4 shrink-0 cursor-pointer accent-primary-color"
+                      />
+                    </FormControl>
+                    I certify that the information provided above is accurate
+                    and complete to the best of my knowledge.
+                  </label>
                   <FormMessage />
                 </FormItem>
               )}

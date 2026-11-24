@@ -22,6 +22,8 @@ interface OffersReceivedProps {
   lastActionBy?: "buyer" | "seller";
   status: (typeof OFFER_STATUS)[keyof typeof OFFER_STATUS];
   isSellerAddedAuthorizedSigner?: boolean;
+  isContractDetailsSubmitted?: boolean;
+  onSubmitContractDetails?: () => void;
   onAcceptOffer?: () => void;
   onReject?: () => void;
   isSubmitting?: boolean;
@@ -43,6 +45,8 @@ export function OffersReceived({
   lastActionBy,
   status,
   isSellerAddedAuthorizedSigner,
+  isContractDetailsSubmitted,
+  onSubmitContractDetails,
   onAcceptOffer,
   onReject,
   isSubmitting,
@@ -76,6 +80,8 @@ export function OffersReceived({
         lastActionBy={lastActionBy}
         status={status}
         isSellerAddedAuthorizedSigner={isSellerAddedAuthorizedSigner}
+        isContractDetailsSubmitted={isContractDetailsSubmitted}
+        onSubmitContractDetails={onSubmitContractDetails}
       />
     </div>
   );

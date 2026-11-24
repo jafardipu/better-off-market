@@ -13,6 +13,9 @@ interface OffersReceivedActionBarProps {
   lastActionBy?: "buyer" | "seller";
   status: (typeof OFFER_STATUS)[keyof typeof OFFER_STATUS];
   isSellerAddedAuthorizedSigner?: boolean;
+  /** True once the seller submitted the contract details for this offer. */
+  isContractDetailsSubmitted?: boolean;
+  onSubmitContractDetails?: () => void;
 }
 
 const baseButton =
@@ -27,7 +30,10 @@ export function OffersReceivedActionBar({
   className,
   lastActionBy = "buyer",
   status,
-  isSellerAddedAuthorizedSigner,
+  // OLD FLOW (contracts / e-signing) — disabled for now on attorney advice.
+  // isSellerAddedAuthorizedSigner,
+  isContractDetailsSubmitted,
+  onSubmitContractDetails,
 }: OffersReceivedActionBarProps) {
   const showFullActions = lastActionBy !== "seller";
   const isStatusClosed = CLOSED_OFFER_STATUSES.includes(status);
@@ -39,6 +45,7 @@ export function OffersReceivedActionBar({
         className,
       )}
     >
+      {/* OLD FLOW (contracts / e-signing) — disabled for now on attorney advice.
       {!isSellerAddedAuthorizedSigner && status === "accepted" ? (
         <Link
           href={`/sign-agreement-contact?offerId=${offerId}&actionBy=seller`}
@@ -54,6 +61,25 @@ export function OffersReceivedActionBar({
             Add Authorized Signer
           </button>
         </Link>
+      ) : null}
+      */}
+
+      {/* NEW FLOW: after an offer is accepted the seller submits the contract
+          details (buyer name, closing date, title company, buyer contact source). */}
+      {status === "accepted" &&
+      !isContractDetailsSubmitted &&
+      onSubmitContractDetails ? (
+        <button
+          type="button"
+          onClick={onSubmitContractDetails}
+          disabled={isSubmitting}
+          className={cn(
+            baseButton,
+            "bg-[#0F2A4D] hover:bg-[#0F2A4D]/90 text-white rounded-md cursor-pointer",
+          )}
+        >
+          Submit Contract Details
+        </button>
       ) : null}
 
       {showFullActions && !isStatusClosed ? (

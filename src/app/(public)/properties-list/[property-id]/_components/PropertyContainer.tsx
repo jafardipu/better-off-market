@@ -7,6 +7,7 @@ import { Documents } from "./Documents";
 import { LocationMap } from "./LocationMap";
 import { OpenHouse } from "./OpenHouse";
 import AuthenticationRequired from "./AuthenticationRequired";
+import BuyerPlatformFeeNotice from "./BuyerPlatformFeeNotice";
 import { IPropertyResponse } from "@/types";
 import { BasicPropertyDetails } from "./BasicPropertyDetails";
 import IncreaseViewsCount from "./IncreaseViewsCount";
@@ -75,6 +76,8 @@ export default function PropertyContainer({
               sellerId={property?.seller?._id}
             />
           )}
+
+          <BuyerPlatformFeeNotice />
 
           <ProfileCard seller={property?.seller} />
         </div>

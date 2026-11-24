@@ -22,6 +22,7 @@ interface OffersReceivedActionBarProps {
 const baseButton =
   "inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60";
 
+
 export function OffersSentActionBar({
   sellerId,
   offerId,
@@ -31,7 +32,8 @@ export function OffersSentActionBar({
   className,
   lastActionBy = "buyer",
   status,
-  isBuyerAddedAuthorizedSigner,
+  // OLD FLOW (contracts / e-signing) — disabled for now on attorney advice.
+  // isBuyerAddedAuthorizedSigner,
 }: OffersReceivedActionBarProps) {
   const showFullActions = lastActionBy !== "buyer";
   const isStatusClosed = CLOSED_OFFER_STATUSES.includes(status);
@@ -43,6 +45,7 @@ export function OffersSentActionBar({
         className,
       )}
     >
+      {/* OLD FLOW (contracts / e-signing) — disabled for now on attorney advice.
       {!isBuyerAddedAuthorizedSigner && status === "accepted" ? (
         <Link
           href={`/sign-agreement-contact?offerId=${offerId}&actionBy=buyer`}
@@ -59,6 +62,7 @@ export function OffersSentActionBar({
           </button>
         </Link>
       ) : null}
+      */}
       {showFullActions && !isStatusClosed ? (
         <button
           type="button"

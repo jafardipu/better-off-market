@@ -18,6 +18,7 @@ import {
   mapTermsToConsolidatedOfferData,
 } from "@/app/(seller)/user/offers-received/[offer-id]/_components/offers-received/utils.offer-received";
 import { OffersSent } from "./OffersSent";
+import { AgreementReachedDialog } from "./AgreementReachedDialog";
 
 export default function ReviewSentOfferContainer() {
   const offerId = useSearchParams().get("offer");
@@ -25,6 +26,8 @@ export default function ReviewSentOfferContainer() {
   const [rejectOffer] = useRejectOfferMutation();
   const [openRejectModal, setOpenRejectModal] = useState(false);
   const [openAcceptModal, setOpenAcceptModal] = useState(false);
+  // NEW FLOW: "You've Reached an Agreement" pop-up after the buyer accepts.
+  const [openAgreementReached, setOpenAgreementReached] = useState(false);
   const [acceptOffer] = useAcceptOfferMutation();
 
   const { data, isLoading } = useGetSingleOfferQuery(offerId, {
@@ -51,6 +54,7 @@ export default function ReviewSentOfferContainer() {
   } = offer;
 
   const propertyLabel = `${property.propertyType} — ${property.streetAddress},  ${property.city}, ${property.state}, ${property.zipCode}, ${property.county}`;
+  const propertyAddress = `${property.streetAddress}, ${property.city}, ${property.state} ${property.zipCode}`;
   const offersSubmittedCount = history.length;
 
   // The most recent round always mirrors currentTerms
@@ -89,7 +93,14 @@ export default function ReviewSentOfferContainer() {
     try {
       await acceptOffer(offerId).unwrap();
       toast.success("Offer accepted successfully!", { id: "accept" });
-      router.push(`/sign-agreement-contact?offerId=${offerId}&actionBy=buyer`);
+      // OLD FLOW (contracts / e-signing) — disabled for now on attorney advice.
+      // router.push(`/sign-agreement-contact?offerId=${offerId}&actionBy=buyer`);
+
+      // NEW FLOW: congratulate the buyer on screen. The backend also puts the
+      // same message in the buyer's notifications and asks the seller for
+      // the contract details.
+      setOpenAcceptModal(false);
+      setOpenAgreementReached(true);
     } catch (error) {
       const errorMessage = errorModification(error);
       toast.error(errorMessage, { id: "accept" });
@@ -151,7 +162,9 @@ export default function ReviewSentOfferContainer() {
         open={openAcceptModal}
         onOpenChange={setOpenAcceptModal}
         title="Accept offer"
-        description="Are you sure you want to accept this offer and proceed to agreement?"
+        // OLD FLOW (contracts / e-signing) — disabled for now on attorney advice.
+        // description="Are you sure you want to accept this offer and proceed to agreement?"
+        description="Are you sure you want to accept this offer?"
         actions={[
           {
             label: "Cancel",
@@ -163,6 +176,11 @@ export default function ReviewSentOfferContainer() {
             onClick: () => handleAcceptOffer(),
           },
         ]}
+      />
+      <AgreementReachedDialog
+        open={openAgreementReached}
+        onOpenChange={setOpenAgreementReached}
+        propertyAddress={propertyAddress}
       />
     </>
   );

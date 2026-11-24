@@ -308,6 +308,9 @@ export interface IOffer {
 
   supportingDocuments: IDocument[];
 
+  /** True once the seller submitted contract details for this accepted offer. */
+  isContractDetailsSubmitted?: boolean;
+
   isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;

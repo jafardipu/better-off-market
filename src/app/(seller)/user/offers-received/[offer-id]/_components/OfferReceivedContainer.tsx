@@ -5,7 +5,7 @@ import {
   useRejectOfferMutation,
 } from "@/redux/api/offerApi";
 import { OffersReceived } from "./offers-received";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import {
   formatDate,
   getRoundTitle,
@@ -18,6 +18,8 @@ import { errorModification } from "@/lib/errors/errorModification";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import OffersDetailsPageSkeleton from "@/components/skeleton/OffersDetailsPageSkeleton";
+import { MarkUnderContractDialog } from "@/app/(seller)/user/my-listings/[property-id]/_components/MarkUnderContractDialog";
+import { revalidateProperties } from "@/lib/actions/revalidate";
 
 export default function OfferReceivedContainer() {
   const params = useParams();
@@ -28,11 +30,34 @@ export default function OfferReceivedContainer() {
   const [openRejectModal, setOpenRejectModal] = useState(false);
   const [openAcceptModal, setOpenAcceptModal] = useState(false);
 
+  // NEW FLOW: contract-details pop-up. It opens after the seller accepts, from
+  // the "Submit Contract Details" button, or automatically when the seller
+  // arrives from the "buyer accepted your offer" notification (?contractDetails=1).
+  const [openContractModal, setOpenContractModal] = useState(false);
+  const [contractAutoOpenDismissed, setContractAutoOpenDismissed] =
+    useState(false);
+  const cameFromNotification =
+    useSearchParams().get("contractDetails") === "1";
+
   const { data, isLoading } = useGetSingleOfferQuery(offerId, {
     skip: !offerId,
   });
 
   const offer = data?.data;
+
+  // Opening by hand doesn't wait for the status: right after accepting, the
+  // offer is still being refetched and may not read "accepted" yet.
+  const isContractModalOpen =
+    !offer?.isContractDetailsSubmitted &&
+    (openContractModal ||
+      (cameFromNotification &&
+        offer?.status === "accepted" &&
+        !contractAutoOpenDismissed));
+
+  const handleContractModalChange = (open: boolean) => {
+    setOpenContractModal(open);
+    if (!open) setContractAutoOpenDismissed(true);
+  };
 
   if (isLoading) {
     return <OffersDetailsPageSkeleton />;
@@ -90,7 +115,13 @@ export default function OfferReceivedContainer() {
     try {
       await acceptOffer(offerId).unwrap();
       toast.success("Offer accepted successfully!", { id: "accept" });
-      router.push(`/sign-agreement-contact?offerId=${offerId}&actionBy=seller`);
+      // OLD FLOW (contracts / e-signing) — disabled for now on attorney advice.
+      // router.push(`/sign-agreement-contact?offerId=${offerId}&actionBy=seller`);
+
+      // NEW FLOW: show the seller the contract-details pop-up. The backend
+      // sends the buyer the "You've Reached an Agreement" notification.
+      setOpenAcceptModal(false);
+      setOpenContractModal(true);
     } catch (error) {
       const errorMessage = errorModification(error);
       toast.error(errorMessage, { id: "accept" });
@@ -129,8 +160,18 @@ export default function OfferReceivedContainer() {
         lastActionBy={lastActionBy}
         status={offer.status}
         isSellerAddedAuthorizedSigner={offer?.isSellerAddedAuthorizedSigner}
+        isContractDetailsSubmitted={offer?.isContractDetailsSubmitted}
+        onSubmitContractDetails={() => setOpenContractModal(true)}
         onAcceptOffer={() => setOpenAcceptModal(true)}
         onReject={() => setOpenRejectModal(true)}
+      />
+      <MarkUnderContractDialog
+        propertyId={property?._id}
+        offerId={offerId}
+        currentStatus={property?.status}
+        open={isContractModalOpen}
+        onOpenChange={handleContractModalChange}
+        onUpdated={() => revalidateProperties(property?._id)}
       />
       <AppDialog
         open={openRejectModal}
@@ -153,7 +194,9 @@ export default function OfferReceivedContainer() {
         open={openAcceptModal}
         onOpenChange={setOpenAcceptModal}
         title="Accept offer"
-        description="Are you sure you want to accept this offer and proceed to agreement?"
+        // OLD FLOW (contracts / e-signing) — disabled for now on attorney advice.
+        // description="Are you sure you want to accept this offer and proceed to agreement?"
+        description="Are you sure you want to accept this offer?"
         actions={[
           {
             label: "Cancel",
