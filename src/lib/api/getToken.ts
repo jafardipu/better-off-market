@@ -1,8 +1,7 @@
 import { cookies } from "next/headers";
-
-const TOKEN_KEY = "betteroffmarket-access-token";
+import { ACCESS_TOKEN_COOKIE } from "@/lib/auth/authUtils";
 
 export async function getServerToken(): Promise<string | undefined> {
   const cookieStore = await cookies();
-  return cookieStore.get(TOKEN_KEY)?.value;
+  return cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
 }

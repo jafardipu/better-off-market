@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { errorModification } from "@/lib/errors/errorModification";
 import { LoaderIcon } from "@/icons";
 import useFcmToken from "@/hooks/useFcmToken";
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/auth/authUtils";
 
 // Zod validation schema
 const loginSchema = z.object({
@@ -35,7 +36,10 @@ export default function LoginForm() {
   const [login, { isLoading }] = useLoginMutation();
   const { requestFcmToken } = useFcmToken();
 
-  const callbackUrl = useSearchParams().get("callbackUrl");
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
+  // Set by endSession() when an expired session sends the user here.
+  const sessionExpired = searchParams.get("sessionExpired") === "1";
 
   const {
     register,
@@ -118,6 +122,11 @@ export default function LoginForm() {
       {error && (
         <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
           {error}
+        </div>
+      )}
+      {sessionExpired && !error && (
+        <div className="mb-4 rounded-md bg-amber-50 p-3 text-sm text-amber-800">
+          {SESSION_EXPIRED_MESSAGE}
         </div>
       )}
 

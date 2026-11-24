@@ -1,11 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { logout, setUser } from "../features/authSlice";
+import {
+  BaseQueryFn,
+  createApi,
+  FetchArgs,
+  fetchBaseQuery,
+  FetchBaseQueryError,
+} from "@reduxjs/toolkit/query/react";
 import { tagTypesList } from "../tagTypes";
 import { envConfig } from "@/config";
+import { refreshSession, SessionState } from "@/lib/auth/session";
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/auth/authUtils";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: envConfig.baseUrl,
+  // Needed so the browser stores the httpOnly refreshToken cookie the API sets
+  // at login. Without it, refreshing can never work.
+  credentials: "include",
   prepareHeaders: (headers, { getState }) => {
     const otpToken = sessionStorage.getItem("token");
     const forgotPasswordToken = sessionStorage.getItem("forgotPasswordToken");
@@ -34,43 +44,60 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
-const baseQueryWithRefreshToken = async (
-  args: any,
-  api: any,
-  extraOptions: any,
-) => {
-  let result = await baseQuery(args, api, extraOptions);
+// A 401 from these means wrong credentials or OTP, not an expired session.
+const NO_REFRESH_URLS = [
+  "/auth/login",
+  "/auth/refresh-token",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+  "/otp/",
+];
 
-  if (result?.error?.status === 401) {
-    const res = await fetch(`${envConfig.baseUrl}/auth/refresh-token`, {
-      method: "POST",
-      credentials: "include",
-    });
+const sessionExpiredResult = () => ({
+  error: {
+    status: 401,
+    data: { message: SESSION_EXPIRED_MESSAGE },
+  } as FetchBaseQueryError,
+});
 
-    const data = await res.json();
-    if (data?.data?.accessToken) {
-      const user = api.getState().auth.user;
+const baseQueryWithRefreshToken: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  const getState = () => api.getState() as SessionState;
+  // prepareHeaders reads the same value, so this is the token the request carries.
+  const sentToken = getState().auth.token;
 
-      api.dispatch(
-        setUser({
-          user,
-          token: data.data.accessToken,
-        }),
-      );
+  const result = await baseQuery(args, api, extraOptions);
 
-      result = await baseQuery(args, api, extraOptions);
-    } else {
-      api.dispatch(logout());
-    }
-  } else if (result?.error?.status === 403) {
+  if (result.error?.status === 403) {
     // Handle 403 status for blocked user
-    // api.dispatch(logout());
-
     console.log("Your account has been blocked");
-    // Error_Modal({ title: "Your account has been blocked" });
   }
 
-  return result;
+  const url = typeof args === "string" ? args : args.url;
+  if (
+    result.error?.status !== 401 ||
+    !sentToken ||
+    NO_REFRESH_URLS.some((prefix) => url.startsWith(prefix))
+  ) {
+    return result;
+  }
+
+  // If another request already refreshed while this one was in flight, the
+  // stored token has changed — skip straight to the retry. Otherwise refresh
+  // (concurrent 401s share a single refresh request).
+  if (getState().auth.token === sentToken) {
+    const outcome = await refreshSession(api.dispatch, getState);
+    if (outcome === "unavailable") return result;
+    if (outcome === "expired") return sessionExpiredResult();
+  }
+  if (!getState().auth.token) return sessionExpiredResult();
+
+  // Retry once. A second 401 is a permission problem, not an expired session:
+  // it's returned as a normal error and the user stays logged in.
+  return baseQuery(args, api, extraOptions);
 };
 
 export const baseApi = createApi({

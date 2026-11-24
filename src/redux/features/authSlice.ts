@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
+import { ACCESS_TOKEN_COOKIE } from "@/lib/auth/authUtils";
 
 const initialState = {
   user: null,
@@ -19,7 +20,7 @@ const authSlice = createSlice({
       state.token = token;
 
       // Store token in Cookies for middleware authentication
-      Cookies.set("betteroffmarket-access-token", token, {
+      Cookies.set(ACCESS_TOKEN_COOKIE, token, {
         path: "/",
         expires: 30,
       });
@@ -34,7 +35,7 @@ const authSlice = createSlice({
       state.token = null;
 
       // Remove token from cookie
-      Cookies.remove("betteroffmarket-access-token", { path: "/" });
+      Cookies.remove(ACCESS_TOKEN_COOKIE, { path: "/" });
       // Cookies.remove("refreshToken", { path: "/" });
     },
   },

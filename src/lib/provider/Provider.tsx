@@ -5,11 +5,13 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import FirebaseProvider from "./FirebaseProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import SessionRefresher from "./SessionRefresher";
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
+        <SessionRefresher />
         <FirebaseProvider>
           <SocketProvider>
             <TooltipProvider>{children}</TooltipProvider>

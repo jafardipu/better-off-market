@@ -1,32 +1,41 @@
 // proxy.ts
 import { NextRequest, NextResponse } from "next/server";
 import { authRoutes } from "./lib/authRoutes";
+import {
+  ACCESS_TOKEN_COOKIE,
+  isTokenExpired,
+  REFRESH_SESSION_PATH,
+  safeCallbackUrl,
+} from "./lib/auth/authUtils";
 
-const ACCESS_TOKEN_KEY = "betteroffmarket-access-token";
+// A token this close to expiry counts as expired, so it can't lapse while the page renders.
+const EXPIRY_LEEWAY_MS = 10_000;
 
 export function proxy(req: NextRequest) {
   const { nextUrl } = req;
-  const isLoggedIn = req.cookies.get(ACCESS_TOKEN_KEY)?.value;
+  const token = req.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+  const currentPath = nextUrl.pathname + nextUrl.search;
 
-  if (isAuthRoute && isLoggedIn) {
-    const callbackUrl = nextUrl.searchParams.get("callbackUrl");
-    const safeCallback =
-      callbackUrl &&
-      callbackUrl.startsWith("/") &&
-      !callbackUrl.startsWith("//")
-        ? callbackUrl
-        : "/";
-    return NextResponse.redirect(new URL(safeCallback, req.url));
+  if (isAuthRoute && token) {
+    const callbackUrl = safeCallbackUrl(nextUrl.searchParams.get("callbackUrl"));
+    return NextResponse.redirect(new URL(callbackUrl, req.url));
   }
 
-  if (!isLoggedIn && !isAuthRoute) {
+  if (!token && !isAuthRoute) {
     const signInUrl = new URL("/login", req.url);
-    signInUrl.searchParams.set(
-      "callbackUrl",
-      nextUrl.pathname + nextUrl.search,
-    );
+    signInUrl.searchParams.set("callbackUrl", currentPath);
     return NextResponse.redirect(signInUrl);
+  }
+
+  // The access token is present but expired. The refresh token is an httpOnly
+  // cookie on the API's domain, so it never reaches this server and the
+  // refresh can't happen here. /refresh-session renews the token in the
+  // browser, then comes back to this page (or logs the user out).
+  if (token && isTokenExpired(token, EXPIRY_LEEWAY_MS)) {
+    const refreshUrl = new URL(REFRESH_SESSION_PATH, req.url);
+    refreshUrl.searchParams.set("callbackUrl", currentPath);
+    return NextResponse.redirect(refreshUrl);
   }
 
   return NextResponse.next();
