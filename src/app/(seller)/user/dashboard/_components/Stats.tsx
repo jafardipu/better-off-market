@@ -14,18 +14,21 @@ export default function Stats() {
       value: stats?.activeListings,
       icon: ActingListingIcon,
       loading: isLoading,
+      href: "/user/my-listings",
     },
     {
       label: "New offers",
       value: stats?.newOffers,
       icon: NewOfferIcon,
       loading: isLoading,
+      href: "/user/offers-received",
     },
     {
       label: "Total views this week",
       value: stats?.totalViewsThisWeek,
       icon: ViewIcon,
       loading: isLoading,
+      href: "/user/analytics",
     },
   ];
   
