@@ -1,33 +1,23 @@
-import {
-  AlertCircle,
-  Search,
-  BadgeCheck,
-  Calendar,
-  Download,
-  MessageSquareText,
-  UserRound,
-} from "lucide-react";
+import { Download, MessageSquareText } from "lucide-react";
 import { OfferSubSection } from "./OfferSubSection";
-import {
-  formatCurrency,
-  contingencyValue,
-  type ConsolidatedOfferData,
-} from "./utils.offer-received";
-import { SummaryField } from "@/app/(buyer)/review-offer/_components/SummaryField";
-import { ContingencyItem } from "@/app/(buyer)/review-offer/_components/ContingencyItem";
-import { DocIcon, DollarIcon, PersonalPropertyIcon } from "@/icons";
+import { OfferTermsSections } from "./OfferTermsSections";
+import { type ConsolidatedOfferData } from "./utils.offer-received";
+import { DocIcon } from "@/icons";
 import Link from "next/link";
 
 interface ConsolidatedOfferCardProps {
   buyerId: string;
   name: string;
   data: ConsolidatedOfferData;
+  /** The round before `data`, to strike through what changed. */
+  previous?: ConsolidatedOfferData;
 }
 
 export function ConsolidatedOfferCard({
   buyerId,
   name: buyerName,
   data,
+  previous,
 }: ConsolidatedOfferCardProps) {
   return (
     <div className="border border-primary-border-color bg-card p-5 shadow-[0_10px_30px_0_rgba(15,23,42,0.05)] sm:p-6 rounded-lg">
@@ -41,136 +31,11 @@ export function ConsolidatedOfferCard({
         </Link>
       </h4>
       <section className=" space-y-4 rounded-xl lg:mt-5 mt-3">
-        <OfferSubSection title="Offer Details" icon={<DollarIcon />}>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
-            <SummaryField
-              label="Offer amount"
-              value={formatCurrency(data.offerAmount)}
-            />
-            <SummaryField
-              label="Earnest money"
-              value={formatCurrency(data.earnestMoney)}
-            />
-            <SummaryField label="Financing type" value={data.financingType} />
-            {data.financingTerms ? (
-              <SummaryField
-                label="Financing Terms"
-                value={data?.financingTerms}
-              />
-            ) : null}
-            <SummaryField label="Closing costs" value={data.closingCosts} />
-          </div>
-        </OfferSubSection>
-
-        <OfferSubSection
-          title="Personal Property"
-          icon={<PersonalPropertyIcon />}
-        >
-          <div className="flex justify-between items-center flex-wrap gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[#594139]">
-                Included items
-              </p>
-              <p className="mt-1 whitespace-pre-wrap text-sm text-primary-black md:text-lg">
-                {data.personalProperty.includedText?.trim() ||
-                  data.personalProperty.included?.join(", ") ||
-                  "None specified"}
-              </p>
-            </div>
-            {data.personalProperty.itemsToRemove?.trim() ? (
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#594139]">
-                  Items to be removed
-                </p>
-                <p className="mt-1 whitespace-pre-wrap text-sm text-primary-black md:text-lg">
-                  {data.personalProperty.itemsToRemove}
-                </p>
-              </div>
-            ) : null}
-          </div>
-        </OfferSubSection>
-
-        <OfferSubSection title="Contingencies" icon={<AlertCircle size={20} />}>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <ContingencyItem
-              icon={<Search size={16} />}
-              label="Inspection"
-              value={contingencyValue(data.inspection)}
-            />
-            <ContingencyItem
-              icon={<BadgeCheck size={16} />}
-              label="Appraisal"
-              value={contingencyValue(data.appraisal)}
-            />
-          </div>
-        </OfferSubSection>
-
-        <OfferSubSection
-          title="Real Estate Agent"
-          icon={<UserRound size={18} />}
-        >
-          {data.agent?.hasAgent ? (
-            <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
-              <SummaryField
-                label="Agent name"
-                value={data.agent.agentName || "—"}
-              />
-              <SummaryField
-                label="Brokerage name"
-                value={data.agent.brokerageName || "—"}
-              />
-              <SummaryField
-                label="Commission"
-                value={data.agent.commission || "—"}
-              />
-              <SummaryField
-                label="Paid by"
-                value={
-                  data.agent.paidBy
-                    ? data.agent.paidBy.charAt(0).toUpperCase() +
-                      data.agent.paidBy.slice(1)
-                    : "—"
-                }
-              />
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Buyer is not working with a real estate agent.
-            </p>
-          )}
-        </OfferSubSection>
-
-        <OfferSubSection title="Closing Terms" icon={<Calendar size={18} />}>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
-            <SummaryField
-              label="Title company"
-              value={data.closingTerms.titleCompany}
-            />
-            <SummaryField
-              label="Closing date"
-              value={data.closingTerms.closingDate}
-            />
-            <SummaryField
-              label="Possession"
-              value={data.closingTerms.possession}
-            />
-            <SummaryField
-              label="Seller post-closing occupancy"
-              value={data.closingTerms.sellerPostClosingOccupancy}
-            />
-          </div>
-        </OfferSubSection>
-
-        {data.additionalTerms ? (
-          <OfferSubSection
-            title="Additional Terms / Conditions"
-            icon={<MessageSquareText color="#00214C" size={18} />}
-          >
-            <p className="rounded-lg bg-[#F2F4F6] text-[#594139] p-3  italic leading-relaxed">
-              &ldquo;{data?.additionalTerms}&rdquo;
-            </p>
-          </OfferSubSection>
-        ) : null}
+        <OfferTermsSections
+          data={data}
+          previous={previous}
+          personalPropertyClassName="justify-between items-center"
+        />
 
         {data.documents && data.documents.length > 0 ? (
           <OfferSubSection title="Documents" icon={<DocIcon />}>

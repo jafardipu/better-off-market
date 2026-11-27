@@ -24,6 +24,27 @@ import { initialsFromName } from "./Chatfileutils";
 import { toast } from "sonner";
 import { useGetUserByIdQuery } from "@/redux/api/profileApi";
 import { useFileUploadMutation } from "@/redux/api/uploadApi";
+import LoadError from "./LoadError";
+import {
+  CHAT_LIST_LIMIT,
+  SOCKET_ACK_TIMEOUT_MS,
+  type SocketAck,
+} from "./chatSocket";
+
+type RawMessage = Record<string, unknown> & {
+  sender?: string;
+  receiver?: string;
+};
+/** "message" event payload; `userId` is the other participant (newer backend). */
+type MessagePageResponse = { data?: unknown; userId?: string };
+
+/** Messages from `{ data: [...] }`, or the older `{ data: { data: [...] } }`. */
+function extractMessages(res: MessagePageResponse | undefined): RawMessage[] {
+  const outer = res?.data;
+  if (Array.isArray(outer)) return outer;
+  const inner = (outer as { data?: unknown } | null | undefined)?.data;
+  return Array.isArray(inner) ? inner : [];
+}
 
 function normalizePropertyInfo(raw: any): MessagePropertyInfo | undefined {
   const info = raw?.propertyInfo;
@@ -76,7 +97,7 @@ function toConversation(item: ChatListItem, userId?: string): Conversation {
 }
 
 export default function MessagesContainer() {
-  const { socket } = useSocket();
+  const { socket, socketLoading } = useSocket();
   const userId = useSelector(selectUser)?.userId;
   const [fileUploadFn] = useFileUploadMutation();
   const router = useRouter();
@@ -84,7 +105,9 @@ export default function MessagesContainer() {
   const searchParams = useSearchParams();
 
   const [chatListLoading, setChatListLoading] = useState(false);
+  const [chatListError, setChatListError] = useState(false);
   const [messagesLoading, setMessagesLoading] = useState(false);
+  const [messagesError, setMessagesError] = useState(false);
   const [isMsgSendLoading, setIsMsgSendLoading] = useState(false);
 
   const [chatList, setChatList] = useState<ChatListItem[]>([]);
@@ -169,23 +192,49 @@ export default function MessagesContainer() {
   // ── Chat list ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!socket || !userId) return;
+    let active = true;
+    let pending = false;
 
-    const fetchChatList = () => {
-      setChatListLoading(true);
-      socket.emit("my_chat_list", { page: 1, limit: 9999 });
-    };
-
-    const handleChatList = (res: { chats?: ChatListItem[] }) => {
+    const showChatList = (res?: { chats?: ChatListItem[] }) => {
+      pending = false;
       setChatList(res?.chats ?? []);
       setChatListLoading(false);
+      setChatListError(false);
     };
 
-    socket.on("chat_list", handleChatList);
+    // Read the list from the ack: it always comes back to this socket. The
+    // "chat_list" event goes to whichever socket the server last stored for
+    // this user, so with two tabs or after a reconnect it may never arrive.
+    const fetchChatList = () => {
+      pending = true;
+      setChatListLoading(true);
+      setChatListError(false);
+      socket
+        .timeout(SOCKET_ACK_TIMEOUT_MS)
+        .emit(
+          "my_chat_list",
+          { page: 1, limit: CHAT_LIST_LIMIT },
+          (err: Error | null, res?: SocketAck<{ chats?: ChatListItem[] }>) => {
+            if (!active || !pending) return;
+            if (err || !res?.success) {
+              pending = false;
+              setChatListLoading(false);
+              setChatListError(true);
+              return;
+            }
+            showChatList(res.data);
+          },
+        );
+    };
+
+    // Server pushes after a new message or "seen".
+    socket.on("chat_list", showChatList);
     if (socket.connected) fetchChatList();
     socket.on("connect", fetchChatList);
 
     return () => {
-      socket.off("chat_list", handleChatList);
+      active = false;
+      socket.off("chat_list", showChatList);
       socket.off("connect", fetchChatList);
     };
   }, [socket, userId]);
@@ -201,45 +250,72 @@ export default function MessagesContainer() {
   }, [socket, userId]);
 
   // ── Messages for the active conversation ──────────────────────────────
+  // Keyed on the id from the URL, so loading starts at once instead of
+  // waiting for the chat list or the user lookup. "seen" is sent by the
+  // chatId effect below once the chat is known.
   useEffect(() => {
-    if (!socket || !userId || !selectedUser?._id) return;
+    if (!socket || !userId || !selectedUserId) return;
+    let active = true;
+    let pending = false;
 
-    const fetchMessages = () => {
-      setMessagesLoading(true);
-      socket.emit("message_page", {
-        userId: selectedUser._id,
-        page: 1,
-        limit: 9999,
-      });
-    };
-
-    const handleMessages = (res: any) => {
-      let raw: any[] = [];
-      const outer = res?.data;
-      if (Array.isArray(outer)) {
-        raw = outer;
-      } else if (
-        outer &&
-        typeof outer === "object" &&
-        Array.isArray(outer.data)
+    const showMessages = (res?: MessagePageResponse) => {
+      const raw = extractMessages(res);
+      // Ignore a late reply for a conversation the user has already left.
+      if (res?.userId && res.userId !== selectedUserId) return;
+      const first = raw[0];
+      if (
+        first &&
+        first.sender !== selectedUserId &&
+        first.receiver !== selectedUserId
       ) {
-        raw = outer.data;
+        return;
       }
+      pending = false;
       setMessages(raw.map(normalizeMessage));
       setMessagesLoading(false);
-      if (selectedUser?.chatId)
-        socket.emit("seen", { chatId: selectedUser.chatId });
+      setMessagesError(false);
     };
 
-    socket.on("message", handleMessages);
+    const fetchMessages = () => {
+      pending = true;
+      setMessagesLoading(true);
+      setMessagesError(false);
+      socket.timeout(SOCKET_ACK_TIMEOUT_MS).emit(
+        "message_page",
+        { userId: selectedUserId, page: 1, limit: 9999 },
+        (err: Error | null, res?: SocketAck<MessagePageResponse>) => {
+          // Already shown via the "message" event, or the user moved on.
+          if (!active || !pending) return;
+          if (err || res?.success === false) {
+            pending = false;
+            setMessagesLoading(false);
+            setMessagesError(true);
+            return;
+          }
+          // Once the backend returns the page in the ack as well.
+          if (res?.data) showMessages(res.data);
+        },
+      );
+    };
+
+    socket.on("message", showMessages);
     if (socket.connected) fetchMessages();
     socket.on("connect", fetchMessages);
 
     return () => {
-      socket.off("message", handleMessages);
+      active = false;
+      socket.off("message", showMessages);
       socket.off("connect", fetchMessages);
     };
-  }, [socket, userId, selectedUser?._id]);
+  }, [socket, userId, selectedUserId]);
+
+  // Reconnecting registers this tab with the server again; the "connect"
+  // listeners above then refetch.
+  const retryLoad = useCallback(() => {
+    if (!socket) return;
+    if (socket.connected) socket.disconnect().connect();
+    else socket.connect();
+  }, [socket]);
 
   // ── Set chatId when selectedUser changes ───────────────────────────────
   useEffect(() => {
@@ -423,6 +499,9 @@ export default function MessagesContainer() {
         activeId={chatId || null}
         onSelect={handleSelectConversation}
         loading={chatListLoading}
+        error={chatListError}
+        onRetry={retryLoad}
+        retrying={socketLoading}
         className={cn(
           "w-full md:w-75 lg:w-85 border-r border-primary-border-color shrink-0",
           selectedUserId && "hidden md:flex",
@@ -438,13 +517,22 @@ export default function MessagesContainer() {
         {activeContact ? (
           <>
             <ChatHeader contact={activeContact} onBack={handleBack} />
-            <ChatMessages
-              messages={messages}
-              userId={userId}
-              selectedUser={selectedUser as SelectedUser}
-              loading={messagesLoading}
-              isReceiverTyping={isReceiverTyping}
-            />
+            {messagesError ? (
+              <LoadError
+                className="flex-1"
+                message="We couldn't load this conversation."
+                onRetry={retryLoad}
+                busy={socketLoading}
+              />
+            ) : (
+              <ChatMessages
+                messages={messages}
+                userId={userId}
+                selectedUser={selectedUser as SelectedUser}
+                loading={messagesLoading}
+                isReceiverTyping={isReceiverTyping}
+              />
+            )}
             <MessageInput
               onSend={handleSend}
               onTyping={handleTyping}

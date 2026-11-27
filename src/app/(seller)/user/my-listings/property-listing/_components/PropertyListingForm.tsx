@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -88,6 +89,7 @@ export function PropertyListingForm({
   onError,
   isEditMode = false,
 }: PropertyListingFormProps) {
+  const router = useRouter();
   const methods = useForm<PropertyListingFormValues>({
     // @ts-ignore
     resolver: zodResolver(propertyListingSchema),
@@ -117,6 +119,15 @@ export function PropertyListingForm({
     }
   };
 
+  const handleDiscard = () => {
+    reset(getInitialValues(defaultValues));
+    if (!isEditMode) return;
+    // Back to where the seller opened the editor (My Listings or the
+    // listing's page). Opened directly in a new tab: go to My Listings.
+    if (window.history.length > 1) router.back();
+    else router.push("/user/my-listings");
+  };
+
   return (
     <FormProvider {...methods}>
       <form
@@ -138,7 +149,7 @@ export function PropertyListingForm({
         <div className="flex items-center justify-between gap-4">
           <button
             type="button"
-            onClick={() => reset(getInitialValues(defaultValues))}
+            onClick={handleDiscard}
             className="text-sm font-medium text-[#434655] hover:text-gray-700 cursor-pointer"
           >
             Discard Changes

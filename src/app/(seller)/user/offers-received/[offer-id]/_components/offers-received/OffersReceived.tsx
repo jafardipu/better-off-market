@@ -1,8 +1,12 @@
 import { OffersReceivedHeader } from "./OffersReceivedHeader";
-import { OfferComparisonRow, type OfferSnapshot } from "./OfferComparisonRow";
+import { OfferComparisonRow } from "./OfferComparisonRow";
 import { ConsolidatedOfferCard } from "./ConsolidatedOfferCard";
 import { OffersReceivedActionBar } from "./OffersReceivedActionBar";
-import { ConsolidatedOfferData, OFFER_STATUS } from "./utils.offer-received";
+import {
+  ConsolidatedOfferData,
+  OFFER_STATUS,
+  type OfferRound,
+} from "./utils.offer-received";
 import { IPropertyResponse } from "@/types";
 import OfferPropertyCard from "@/components/shared/card/offer-property-card";
 
@@ -14,11 +18,13 @@ interface OffersReceivedProps {
   propertyId: string;
   propertyLabel: string;
   offersSubmittedCount: number;
-  yourOffer: OfferSnapshot;
-  counterOffer?: OfferSnapshot & { badgeNumber?: number };
-  yourOfferTitle?: string;
-  counterOfferTitle?: string;
+  rounds: OfferRound[];
+  selectedRoundIndex: number;
+  onSelectRound: (index: number) => void;
+  /** Terms of the selected round. */
   offer: ConsolidatedOfferData;
+  /** Terms of the round before it, to show what changed. */
+  previousOffer?: ConsolidatedOfferData;
   lastActionBy?: "buyer" | "seller";
   status: (typeof OFFER_STATUS)[keyof typeof OFFER_STATUS];
   isSellerAddedAuthorizedSigner?: boolean;
@@ -37,11 +43,11 @@ export function OffersReceived({
   buyerId,
   propertyLabel,
   offersSubmittedCount,
-  yourOffer,
-  counterOffer,
-  yourOfferTitle,
-  counterOfferTitle,
+  rounds,
+  selectedRoundIndex,
+  onSelectRound,
   offer,
+  previousOffer,
   lastActionBy,
   status,
   isSellerAddedAuthorizedSigner,
@@ -62,13 +68,18 @@ export function OffersReceived({
       />
 
       <OfferComparisonRow
-        yourOffer={yourOffer}
-        counterOffer={counterOffer}
-        yourOfferTitle={yourOfferTitle}
-        counterOfferTitle={counterOfferTitle}
+        rounds={rounds}
+        selectedIndex={selectedRoundIndex}
+        onSelect={onSelectRound}
+        viewer="seller"
       />
 
-      <ConsolidatedOfferCard name={buyerName} buyerId={buyerId} data={offer} />
+      <ConsolidatedOfferCard
+        name={buyerName}
+        buyerId={buyerId}
+        data={offer}
+        previous={previousOffer}
+      />
 
       <OffersReceivedActionBar
         buyerId={buyerId}

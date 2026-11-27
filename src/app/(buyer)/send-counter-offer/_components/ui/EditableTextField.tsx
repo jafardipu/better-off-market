@@ -8,15 +8,16 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { OriginalHint } from "./OriginalHint";
+import { blockNonDigitKeys, toWholeNumberText } from "@/utils/wholeNumberInput";
 
 interface EditableTextFieldProps<T extends FieldValues> {
   control: Control<T>;
   name: FieldPath<T>;
   label: string;
   originalValue: string;
+  /** "number" accepts whole numbers only. */
   type?: "text" | "number" | "date";
   placeholder?: string;
-  step?: string;
 }
 
 export function EditableTextField<T extends FieldValues>({
@@ -26,8 +27,9 @@ export function EditableTextField<T extends FieldValues>({
   originalValue,
   type = "text",
   placeholder,
-  step,
 }: EditableTextFieldProps<T>) {
+  const wholeNumber = type === "number";
+
   return (
     <FormField
       control={control}
@@ -36,8 +38,19 @@ export function EditableTextField<T extends FieldValues>({
         <FormItem>
           <FormLabel className="text-primary-gray font-medium">{label}</FormLabel>
           <FormControl>
-            <Input {...field} type={type} placeholder={placeholder} step={step} min={type === "number" ? "0" : undefined}
-            className="border border-primary-border-color bg-[#F2F4F6] py-5"/>
+            <Input
+              {...field}
+              type={wholeNumber ? "text" : type}
+              inputMode={wholeNumber ? "numeric" : undefined}
+              onKeyDown={wholeNumber ? blockNonDigitKeys : undefined}
+              onChange={
+                wholeNumber
+                  ? (e) => field.onChange(toWholeNumberText(e.target.value))
+                  : field.onChange
+              }
+              placeholder={placeholder}
+              className="border border-primary-border-color bg-[#F2F4F6] py-5"
+            />
           </FormControl>
           <OriginalHint value={originalValue} />
           <FormMessage />

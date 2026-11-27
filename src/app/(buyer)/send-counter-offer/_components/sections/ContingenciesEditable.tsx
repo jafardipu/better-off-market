@@ -10,6 +10,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { blockNonDigitKeys, toWholeNumberText } from "@/utils/wholeNumberInput";
 import type { OfferFormValues } from "@/lib/validations/offer-form";
 import { RadioCardGroup } from "@/app/(buyer)/submit-offer/_components/RadioCardGroup";
 import { ContingencyItem } from "@/app/(buyer)/review-offer/_components/ContingencyItem";
@@ -110,8 +111,12 @@ export function ContingenciesEditable({
                 <FormControl>
                   <Input
                     {...field}
-                    type="number"
-                    min="0"
+                    type="text"
+                    inputMode="numeric"
+                    onKeyDown={blockNonDigitKeys}
+                    onChange={(e) =>
+                      field.onChange(toWholeNumberText(e.target.value))
+                    }
                     disabled={values.inspectionContingency !== "yes"}
                     className="border border-primary-border-color bg-[#F2F4F6] py-5"
                   />

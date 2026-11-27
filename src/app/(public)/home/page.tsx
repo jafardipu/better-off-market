@@ -26,10 +26,10 @@ export default function Home() {
   };
   return (
     <div>
-      <LaunchMarquee />
+      {/* <LaunchMarquee /> */}
       <div className="space-y-16">
         <HeroBanner data={bannerData} />
-        <LaunchAnnouncement />
+        {/* <LaunchAnnouncement /> */}
         <NewlyAddedSection />
         <PriceDropsSection />
         <CategorySection />

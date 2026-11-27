@@ -7,8 +7,7 @@ import {
 import { OffersReceived } from "./offers-received";
 import { useParams, useSearchParams } from "next/navigation";
 import {
-  formatDate,
-  getRoundTitle,
+  getOfferRounds,
   mapTermsToConsolidatedOfferData,
 } from "./offers-received/utils.offer-received";
 import Empty from "@/components/ui/empty-data";
@@ -29,6 +28,8 @@ export default function OfferReceivedContainer() {
   const [acceptOffer] = useAcceptOfferMutation();
   const [openRejectModal, setOpenRejectModal] = useState(false);
   const [openAcceptModal, setOpenAcceptModal] = useState(false);
+  // Offer round shown in the details; null follows the latest round.
+  const [selectedRound, setSelectedRound] = useState<number | null>(null);
 
   // NEW FLOW: contract-details pop-up. It opens after the seller accepts, from
   // the "Submit Contract Details" button, or automatically when the seller
@@ -70,7 +71,6 @@ export default function OfferReceivedContainer() {
     property,
     history,
     currentTerms,
-    currentRound,
     lastActionBy,
     supportingDocuments,
   } = offer;
@@ -79,36 +79,19 @@ export default function OfferReceivedContainer() {
   const propertyLabel = `${property.propertyType} — ${property.streetAddress},  ${property.city}, ${property.state}, ${property.zipCode}, ${property.county}`;
   const offersSubmittedCount = history.length;
 
-  // The most recent round always mirrors currentTerms
-  const currentSnapshot = {
-    amount: currentTerms.offerAmount,
-    closingDate: formatDate(currentTerms.closingDate),
-  };
-
-  // Only show a comparison ("previous vs current") once a second round exists
-  const previousRound =
-    history.length > 1 ? history[history.length - 2] : undefined;
-  const previousSnapshot = previousRound
-    ? {
-        amount: previousRound.offerAmount,
-        closingDate: formatDate(previousRound.closingDate),
-      }
-    : undefined;
-
-  // Single-round case: show just the one card, labeled by who made it.
-  // Multi-round case: left card = previous round, right (highlighted) card = current round.
-  const yourOffer = previousSnapshot ?? currentSnapshot;
-  const counterOffer = previousSnapshot
-    ? { ...currentSnapshot, badgeNumber: currentRound }
-    : undefined;
-
-  const yourOfferTitle = getRoundTitle(previousRound?.madeBy);
-  const counterOfferTitle = getRoundTitle(lastActionBy);
-
-  const consolidatedOfferData = mapTermsToConsolidatedOfferData(
-    currentTerms,
+  const rounds = getOfferRounds(history, currentTerms, lastActionBy);
+  const latestIndex = rounds.length - 1;
+  const selectedIndex = Math.min(selectedRound ?? latestIndex, latestIndex);
+  const selectedOfferData = mapTermsToConsolidatedOfferData(
+    rounds[selectedIndex].terms,
     supportingDocuments,
   );
+  const previousOfferData =
+    selectedIndex > 0
+      ? mapTermsToConsolidatedOfferData(rounds[selectedIndex - 1].terms)
+      : undefined;
+  const handleSelectRound = (index: number) =>
+    setSelectedRound(index === latestIndex ? null : index);
 
   const handleAcceptOffer = async () => {
     toast.loading("Accepting offer...", { id: "accept" });
@@ -152,11 +135,11 @@ export default function OfferReceivedContainer() {
         propertyId={property?._id}
         propertyLabel={propertyLabel}
         offersSubmittedCount={offersSubmittedCount}
-        yourOffer={yourOffer}
-        counterOffer={counterOffer}
-        yourOfferTitle={yourOfferTitle}
-        counterOfferTitle={counterOfferTitle}
-        offer={consolidatedOfferData}
+        rounds={rounds}
+        selectedRoundIndex={selectedIndex}
+        onSelectRound={handleSelectRound}
+        offer={selectedOfferData}
+        previousOffer={previousOfferData}
         lastActionBy={lastActionBy}
         status={offer.status}
         isSellerAddedAuthorizedSigner={offer?.isSellerAddedAuthorizedSigner}

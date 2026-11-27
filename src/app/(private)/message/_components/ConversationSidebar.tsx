@@ -4,12 +4,17 @@ import { Search, Loader2 } from "lucide-react";
 import ConversationListItem from "./ConversationListItem";
 import type { Conversation } from "./types";
 import { cn } from "@/lib/utils";
+import LoadError from "./LoadError";
 
 type Props = {
   conversations: Conversation[];
   activeId: string | null;
   onSelect: (id: string) => void;
   loading?: boolean;
+  /** The chat list request failed or timed out. */
+  error?: boolean;
+  onRetry?: () => void;
+  retrying?: boolean;
   className?: string;
 };
 
@@ -18,6 +23,9 @@ export default function ConversationSidebar({
   activeId,
   onSelect,
   loading,
+  error,
+  onRetry,
+  retrying,
   className,
 }: Props) {
   const [search, setSearch] = useState("");
@@ -51,6 +59,12 @@ export default function ConversationSidebar({
           <div className="flex items-center justify-center py-10">
             <Loader2 className="size-5 animate-spin text-slate-400" />
           </div>
+        ) : error && onRetry ? (
+          <LoadError
+            message="We couldn't load your conversations."
+            onRetry={onRetry}
+            busy={retrying}
+          />
         ) : filtered.length === 0 ? (
           <p className="px-4 py-6 text-center text-sm text-slate-400">
             No conversations found

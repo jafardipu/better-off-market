@@ -12,6 +12,10 @@ import { useGetNotificationQuery } from "@/redux/api/notificationApi";
 import { INotification } from "@/app/(private)/notifications/_components/NotificationsPanel";
 import { useSocket } from "@/context/SocketContextApi";
 import type { ChatListItem } from "@/app/(private)/message/_components/types";
+import {
+  CHAT_LIST_LIMIT,
+  type SocketAck,
+} from "@/app/(private)/message/_components/chatSocket";
 
 export default function NavButton({
   setOpen,
@@ -49,8 +53,16 @@ export default function NavButton({
       return;
     }
 
+    // Read the reply from the ack too: the "chat_list" event only reaches the
+    // socket the server last stored for this user.
     const requestChatList = () => {
-      socket.emit("my_chat_list", { page: 1, limit: 9999 });
+      socket.emit(
+        "my_chat_list",
+        { page: 1, limit: CHAT_LIST_LIMIT },
+        (res?: SocketAck<{ chats?: ChatListItem[] }>) => {
+          if (res?.success) handleChatList(res.data ?? {});
+        },
+      );
     };
 
     const handleChatList = (res: { chats?: ChatListItem[] }) => {

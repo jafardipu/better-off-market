@@ -9,9 +9,12 @@ interface OfferComparisonCardProps {
   closingDate: string;
   previousClosingDate?: string;
   closingLabel?: string;
-  /** Small numbered badge in the top-right corner, e.g. which counter round this is. */
-  badgeNumber?: number;
-  highlighted?: boolean;
+  /** Marks the latest round, the one on the table. */
+  isLatest?: boolean;
+  /** This round is the one shown in the offer details below. */
+  selected?: boolean;
+  /** Makes the card a button that shows this round's details. */
+  onSelect?: () => void;
 }
 
 function formatCurrency(amount: number) {
@@ -29,26 +32,33 @@ export function OfferComparisonCard({
   closingDate,
   previousClosingDate,
   closingLabel = "Closing:",
-  badgeNumber,
-  highlighted,
+  isLatest,
+  selected,
+  onSelect,
 }: OfferComparisonCardProps) {
   const amountChanged =
     previousAmount !== undefined && previousAmount !== amount;
   const dateChanged =
     previousClosingDate !== undefined && previousClosingDate !== closingDate;
 
-  return (
-    <div
-      className={cn(
-        "relative flex-1 rounded-lg border p-4",
-        highlighted
-          ? "border-primary-border-color bg-[#AC34000D]"
-          : " border-none bg-[#F2F4F6]",
-      )}
-    >
-      {badgeNumber !== undefined ? (
-        <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full  text-xs font-semibold text-white">
-          <TagStarIcon/>
+  const className = cn(
+    "relative flex-1 rounded-lg border p-4 text-left",
+    selected
+      ? "border-primary-border-color bg-[#AC34000D] ring-1 ring-primary-border-color"
+      : "border-transparent bg-[#F2F4F6]",
+    onSelect &&
+      "w-full cursor-pointer transition-colors hover:border-primary-border-color focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-color/40",
+  );
+
+  const content = (
+    <>
+      {isLatest ? (
+        <span
+          className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold text-white"
+          title="Current offer"
+        >
+          <TagStarIcon />
+          <span className="sr-only">Current offer</span>
         </span>
       ) : null}
 
@@ -67,19 +77,25 @@ export function OfferComparisonCard({
 
       <p className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
         <Calendar size={13} />
+        <span>{closingLabel}</span>
         {dateChanged ? (
-          <>
-            <span>{closingLabel}</span>
-            <span className="line-through">{previousClosingDate}</span>
-            <span className="font-medium text-foreground">{closingDate}</span>
-          </>
-        ) : (
-          <>
-            <span>{closingLabel}</span>
-            <span className="font-medium text-foreground">{closingDate}</span>
-          </>
-        )}
+          <span className="line-through">{previousClosingDate}</span>
+        ) : null}
+        <span className="font-medium text-foreground">{closingDate}</span>
       </p>
-    </div>
+    </>
+  );
+
+  if (!onSelect) return <div className={className}>{content}</div>;
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={selected}
+      className={className}
+    >
+      {content}
+    </button>
   );
 }

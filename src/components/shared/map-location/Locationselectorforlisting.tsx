@@ -1,14 +1,20 @@
 "use client";
 
-import { GoogleMap, Marker, Autocomplete } from "@react-google-maps/api";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Locate, Search } from "lucide-react";
+import { GoogleMap, Marker } from "@react-google-maps/api";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import type { KeyboardEvent } from "react";
+import { Loader2, Locate, MapPin, Search } from "lucide-react";
 import { useGoogleMaps } from "@/hooks/useGoogleMaps";
+import { cn } from "@/lib/utils";
 
 const containerStyle = {
   width: "100%",
   height: "300px",
 };
+
+const SEARCH_DEBOUNCE_MS = 300;
+
+type PlacePrediction = google.maps.places.PlacePrediction;
 
 // ---- data type (matches your ILocation) ----
 export interface ILocation {
@@ -74,10 +80,25 @@ export function LocationSelectorForListing({
   const { isLoaded } = useGoogleMaps();
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [autocomplete, setAutocomplete] =
-    useState<google.maps.places.Autocomplete | null>(null);
   const [searchValue, setSearchValue] = useState("");
   const [locating, setLocating] = useState(false);
+  // Suggestions are kept with the text they were fetched for, so they hide
+  // as soon as the box holds different text.
+  const [results, setResults] = useState<{
+    text: string;
+    items: PlacePrediction[];
+  } | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [listOpen, setListOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const listId = useId();
+  const searchBoxRef = useRef<HTMLDivElement>(null);
+  const searchTimer = useRef<number | null>(null);
+  // Bumped on every keystroke so an older, slower response is ignored.
+  const latestSearch = useRef(0);
+  // One token spans the keystrokes up to a pick, so Google bills one session.
+  const sessionToken =
+    useRef<google.maps.places.AutocompleteSessionToken | null>(null);
   const onChangeRef = useRef(onChange);
   const geocodeRequest = useRef(0);
   const lastGeocoded = useRef("");
@@ -196,26 +217,125 @@ export function LocationSelectorForListing({
     });
   }, []);
 
-  const onAutocompleteLoad = useCallback(
-    (ac: google.maps.places.Autocomplete) => {
-      setAutocomplete(ac);
+  // Close the suggestion list on a click outside the search box.
+  useEffect(() => {
+    const closeOnOutsideClick = (e: MouseEvent) => {
+      if (!searchBoxRef.current?.contains(e.target as Node)) {
+        setListOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", closeOnOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutsideClick);
+      if (searchTimer.current) window.clearTimeout(searchTimer.current);
+    };
+  }, []);
+
+  // Places API (New). The legacy Autocomplete widget can't be used: Google no
+  // longer enables the legacy Places API, and the widget fails with "This page
+  // can't load Google Maps correctly".
+  const fetchPredictions = useCallback(
+    async (text: string, requestId: number) => {
+      const places = google.maps.places;
+      sessionToken.current ??= new places.AutocompleteSessionToken();
+      try {
+        const { suggestions } =
+          await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+            input: text,
+            sessionToken: sessionToken.current,
+            locationBias: map?.getBounds() ?? undefined,
+          });
+        if (requestId !== latestSearch.current) return;
+        setResults({
+          text,
+          items: suggestions.flatMap((s) =>
+            s.placePrediction ? [s.placePrediction] : [],
+          ),
+        });
+        setActiveIndex(-1);
+      } catch (err) {
+        console.error("Place autocomplete failed:", err);
+        if (requestId === latestSearch.current) setResults({ text, items: [] });
+      } finally {
+        if (requestId === latestSearch.current) setSearching(false);
+      }
     },
-    [],
+    [map],
   );
 
-  const onPlaceChanged = useCallback(() => {
-    if (!autocomplete) return;
-    const place = autocomplete.getPlace();
-    const loc = place.geometry?.location;
-    if (!loc) return;
+  const handleSearchChange = (text: string) => {
+    setSearchValue(text);
+    setListOpen(true);
+    const requestId = ++latestSearch.current;
+    if (searchTimer.current) window.clearTimeout(searchTimer.current);
+    if (!text.trim()) {
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    searchTimer.current = window.setTimeout(
+      () => fetchPredictions(text, requestId),
+      SEARCH_DEBOUNCE_MS,
+    );
+  };
 
-    const lat = loc.lat();
-    const lng = loc.lng();
+  const selectPrediction = useCallback(
+    async (prediction: PlacePrediction) => {
+      latestSearch.current++;
+      if (searchTimer.current) window.clearTimeout(searchTimer.current);
+      setSearching(false);
+      setListOpen(false);
+      setSearchValue(prediction.text.text);
+      try {
+        const place = prediction.toPlace();
+        // The field mask sets the price: ask only for what the pin needs.
+        await place.fetchFields({ fields: ["location", "formattedAddress"] });
+        const loc = place.location;
+        if (!loc) return;
 
-    applyLocation(lat, lng, place.formatted_address ?? place.name ?? "");
-    map?.panTo({ lat, lng });
-    map?.setZoom(16);
-  }, [autocomplete, map, applyLocation]);
+        const lat = loc.lat();
+        const lng = loc.lng();
+        applyLocation(lat, lng, place.formattedAddress ?? prediction.text.text);
+        map?.panTo({ lat, lng });
+        map?.setZoom(16);
+      } catch (err) {
+        console.error("Place lookup failed:", err);
+      } finally {
+        // fetchFields ends the session; the next search needs a new token.
+        sessionToken.current = null;
+      }
+    },
+    [map, applyLocation],
+  );
+
+  const visibleItems =
+    results && results.text === searchValue ? results.items : null;
+  const showList =
+    listOpen &&
+    searchValue.trim() !== "" &&
+    (searching || visibleItems !== null);
+
+  const handleSearchKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      // This box sits inside the listing form: Enter must not submit it.
+      e.preventDefault();
+      const pick = visibleItems?.[activeIndex] ?? visibleItems?.[0];
+      if (showList && !searching && pick) selectPrediction(pick);
+      return;
+    }
+    if (e.key === "Escape") {
+      setListOpen(false);
+      return;
+    }
+    if (!showList || !visibleItems?.length) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((i) => (i + 1) % visibleItems.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((i) => (i <= 0 ? visibleItems.length - 1 : i - 1));
+    }
+  };
 
   const onMapClick = useCallback(
     (e: google.maps.MapMouseEvent) => {
@@ -267,23 +387,78 @@ export function LocationSelectorForListing({
 
       {isLoaded ? (
         <>
-          <Autocomplete
-            onLoad={onAutocompleteLoad}
-            onPlaceChanged={onPlaceChanged}
-          >
-            <div className="relative mb-3">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                placeholder="Search for an address, city, or landmark"
-                className={`w-full rounded-lg border bg-[#F2F4F6] pl-9 pr-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-gray-200 ${
-                  error ? "border-red-500" : "border-gray-300"
-                }`}
-              />
-            </div>
-          </Autocomplete>
+          <div ref={searchBoxRef} className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              role="combobox"
+              aria-expanded={showList}
+              aria-controls={listId}
+              aria-autocomplete="list"
+              aria-activedescendant={
+                showList && activeIndex >= 0
+                  ? `${listId}-${activeIndex}`
+                  : undefined
+              }
+              autoComplete="off"
+              value={searchValue}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              onFocus={() => setListOpen(true)}
+              onKeyDown={handleSearchKeyDown}
+              placeholder="Search for an address, city, or landmark"
+              className={`w-full rounded-lg border bg-[#F2F4F6] pl-9 pr-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-gray-200 ${
+                error ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+
+            {showList && (
+              <ul
+                id={listId}
+                role="listbox"
+                className="absolute inset-x-0 top-[calc(100%+4px)] z-20 max-h-60 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+              >
+                {searching || !visibleItems ? (
+                  <li className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground">
+                    <Loader2 className="size-4 animate-spin" />
+                    Searching…
+                  </li>
+                ) : visibleItems.length === 0 ? (
+                  <li className="px-3 py-2.5 text-sm text-muted-foreground">
+                    No places found.
+                  </li>
+                ) : (
+                  visibleItems.map((prediction, i) => (
+                    <li
+                      key={prediction.placeId}
+                      id={`${listId}-${i}`}
+                      role="option"
+                      aria-selected={i === activeIndex}
+                      // Keep focus in the input so the list doesn't close first.
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => selectPrediction(prediction)}
+                      onMouseEnter={() => setActiveIndex(i)}
+                      className={cn(
+                        "flex cursor-pointer items-start gap-2 px-3 py-2 text-sm",
+                        i === activeIndex && "bg-gray-100",
+                      )}
+                    >
+                      <MapPin className="mt-0.5 size-4 shrink-0 text-[#A9ACB3]" />
+                      <span className="min-w-0">
+                        <span className="block truncate text-primary-black">
+                          {prediction.mainText?.text ?? prediction.text.text}
+                        </span>
+                        {prediction.secondaryText?.text && (
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {prediction.secondaryText.text}
+                          </span>
+                        )}
+                      </span>
+                    </li>
+                  ))
+                )}
+              </ul>
+            )}
+          </div>
 
           <div className="relative rounded-2xl overflow-hidden border border-gray-200">
             <GoogleMap

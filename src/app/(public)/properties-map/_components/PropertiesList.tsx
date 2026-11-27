@@ -89,9 +89,9 @@ export default function PropertiesList({
 
     return (
       <div className="grid grid-cols-1">
-        {list.map((property, index) => (
+        {list.map((property) => (
           <div
-            key={index}
+            key={property._id}
             // className={
             //   property._id === id
             //     ? "rounded-md scale-105 duration-300 transform transition-transform mt-4"

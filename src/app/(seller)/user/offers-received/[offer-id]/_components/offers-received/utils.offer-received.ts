@@ -155,11 +155,64 @@ export function splitToList(value?: string | null) {
     .filter(Boolean);
 }
 
-// "Ori Mccullough" -> "Ori M."
+export function includedItemsText(data: ConsolidatedOfferData) {
+  return (
+    data.personalProperty.includedText?.trim() ||
+    data.personalProperty.included?.join(", ") ||
+    "None specified"
+  );
+}
 
+export function paidByLabel(paidBy?: string) {
+  return paidBy ? paidBy.charAt(0).toUpperCase() + paidBy.slice(1) : "—";
+}
 
-export function getRoundTitle(madeBy?: "buyer" | "seller") {
-  return madeBy === "seller" ? "Your Counter Offer" : "Buyer's Offer";
+/** The previous value when it differs from the current one, else undefined. */
+export function changedFrom(previous: string | undefined, current: string) {
+  return previous !== undefined && previous !== current ? previous : undefined;
+}
+
+export type OfferViewer = "buyer" | "seller";
+
+/** Card title for one negotiation round, worded for whoever is viewing. */
+export function getRoundTitle(
+  madeBy: "buyer" | "seller" | undefined,
+  viewer: OfferViewer,
+  isFirstRound: boolean,
+) {
+  const mine = madeBy === viewer;
+  if (madeBy === "seller") {
+    return mine ? "Your Counter Offer" : "Seller's Counter Offer";
+  }
+  if (isFirstRound) return mine ? "Your Offer" : "Buyer's Offer";
+  return mine ? "Your Counter Offer" : "Buyer's Counter Offer";
+}
+
+export interface OfferRound {
+  /** 1-based. */
+  round: number;
+  madeBy?: "buyer" | "seller";
+  terms: OfferTerms;
+}
+
+/**
+ * Every negotiation round, oldest first. The latest uses `currentTerms`,
+ * the terms that Accept acts on.
+ */
+export function getOfferRounds(
+  history: OfferTerms[] | undefined,
+  currentTerms: OfferTerms,
+  lastActionBy?: "buyer" | "seller",
+): OfferRound[] {
+  const entries = history?.length
+    ? history
+    : [{ ...currentTerms, madeBy: lastActionBy }];
+  const latest = entries.length - 1;
+  return entries.map((entry, i) => ({
+    round: i + 1,
+    madeBy: entry.madeBy,
+    terms: i === latest ? currentTerms : entry,
+  }));
 }
 
 export function mapTermsToConsolidatedOfferData(

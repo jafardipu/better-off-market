@@ -36,8 +36,8 @@ export default async function ListedProperties({
         <>
           <PropertiesSortBar total={metaData?.total} />
           <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3  gap-4">
-            {properties?.map((property, index) => (
-              <PropertyCard key={index} {...property} className="xl:h-56" />
+            {properties?.map((property) => (
+              <PropertyCard key={property._id} {...property} className="xl:h-56" />
             ))}
           </div>
           <PaginationSection

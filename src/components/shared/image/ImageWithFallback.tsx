@@ -19,11 +19,16 @@ export default function ImageWithFallback({
   className,
   ...rest
 }: PropertyImageProps) {
-  const [imgSrc, setImgSrc] = useState(src || fallbackSrc);
-  const [hasErrored, setHasErrored] = useState(false);
+  // Derive the shown image from `src` on every render. Copying it into state
+  // kept the first photo when a reused card got a new property (filter/sort).
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const imgSrc = !src || failedSrc === src ? fallbackSrc : src;
 
   return (
     <Image
+      // A new image gets a fresh <img> (and blur placeholder) instead of
+      // showing the previous photo until it loads.
+      key={imgSrc}
       src={imgSrc}
       alt={alt}
       width={width}
@@ -35,10 +40,7 @@ export default function ImageWithFallback({
       )}
       className={className}
       onError={() => {
-        if (!hasErrored) {
-          setHasErrored(true);
-          setImgSrc(fallbackSrc);
-        }
+        if (src && imgSrc === src) setFailedSrc(src);
       }}
       {...rest}
     />
