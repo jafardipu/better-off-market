@@ -1,5 +1,5 @@
 const MESSAGE =
-  "We're Launching Black Friday! · BetterOffMarket officially launches November 27, 2026. · We're putting the finishing touches on the platform. Stay tuned!";
+  "We're Launching Black Friday! · BetterOffMarket officially launches November 30, 2026. · We're putting the finishing touches on the platform. Stay tuned!";
 
 export default function LaunchMarquee() {
   return (
